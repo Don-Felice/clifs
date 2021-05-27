@@ -6,7 +6,7 @@ import pathlib
 from clifs.utils import wrap_string
 
 from colorama import init
-init()
+init()      # allow for ansi escape sequences to have colorful cmd output
 
 PIPE = "│"
 ELBOW = "└──"
@@ -42,27 +42,34 @@ class DirectoryTree:
             print(entry)
 
     @staticmethod
-    def _size2str(size, ansiescape_color= "\033[0;36m"):
+    def _size2str(size, ansiescape_color="\033[0;36m"):
         if size >= (1024 * 1024 * 1024):
             unit = "GB"
             size = round(size / (1024 * 1024 * 1024), 2)
         else:
             unit = "MB"
             size = round(size / (1024 * 1024), 2)
-        return wrap_string(f"size: {size} " + unit, prefix="\033[0;36m")
+        return wrap_string(f"size: {size} " + unit, prefix=ansiescape_color)
 
     def _build_tree(self):
-        self._tree_head()
-        self._tree_body(self.root_dir)
+        self._add_directory(self.root_dir)
         return self._tree
 
-    def _tree_head(self):
-        self._tree.append(f"{self.root_dir}{os.sep}")
-        self._tree.append(PIPE)
+    def _add_directory(
+            self, directory, index=0, entries_count=0, prefix="", connector="", ansiescape_color="\033[0;93m"
+            ):
+        idx_dir = len(self._tree)   # get index of current directory in tree list to attach size info
+        self._tree.append(f"{prefix}{connector}" + wrap_string(f"{directory.name}{os.sep}", prefix=ansiescape_color))
 
-    def _tree_body(self, directory, prefix=""):
+        if connector == "":     # for root dir
+            pass
+        elif index != entries_count - 1:
+            prefix += PIPE_PREFIX
+        else:                   # for last sub-dir
+            prefix += SPACE_PREFIX
+
         entries = directory.iterdir()
-        entries = sorted(entries, key=lambda entry: not entry.is_file())
+        entries = sorted(entries, key=lambda item: not item.is_file())
         entries_count = len(entries)
         size = 0
 
@@ -73,26 +80,9 @@ class DirectoryTree:
             else:
                 size += self._add_file(entry, prefix, connector)
 
-        return size
-
-    def _add_directory(
-            self, directory, index, entries_count, prefix, connector, ansiescape_color="\033[0;93m"
-            ):
-        idx_dir = len(self._tree) # get index of current directory in tree list to attach size info
-        self._tree.append(f"{prefix}{connector}" + ansiescape_color + f"{directory.name}{os.sep}" + "\033[0m")
-        if index != entries_count - 1:
-            prefix += PIPE_PREFIX
-        else:
-            prefix += SPACE_PREFIX
-
-        size = self._tree_body(
-                directory=directory,
-                prefix=prefix,
-                )
-
-        self._tree[idx_dir] = self._tree[idx_dir] + wrap_string(SPACE_PREFIX + self._size2str(size), prefix=ansiescape_color)
+        self._tree[idx_dir] = self._tree[idx_dir] + wrap_string(SPACE_PREFIX + self._size2str(size),
+                                                                prefix=ansiescape_color)
         self._tree.append(prefix.rstrip())
-
         return size
 
     def _add_file(self, file, prefix, connector):
