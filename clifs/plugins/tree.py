@@ -65,7 +65,18 @@ class DirectoryTree(ClifsPlugin):
             prefix += SPACE_PREFIX
 
         entries = directory.iterdir()
-        entries = sorted(entries, key=lambda item: not item.is_file())
+        try:
+            entries = sorted(entries, key=lambda item: not item.is_file())
+        except PermissionError as err:
+            print(wrap_string(f"Warning: no permission to access \"{directory}\". "
+                              f"Size calculations of parent directories could be off.",
+                              prefix=ansiescape_colors['red']))
+            print(wrap_string(f"Error message: \"{err}\"",
+                              prefix=ansiescape_colors['red']))
+            self._tree[idx_dir] = self._tree[idx_dir] + wrap_string(SPACE_PREFIX + "no access",
+                                                                    prefix=ansiescape_colors['red'])
+            return 0
+
         entries_count = len(entries)
         size = 0    # initialize size of sub-directories and files
 
@@ -78,7 +89,6 @@ class DirectoryTree(ClifsPlugin):
 
         self._tree[idx_dir] = self._tree[idx_dir] + wrap_string(SPACE_PREFIX + self._size2str(size),
                                                                 prefix=ansiescape_color)
-        self._tree.append(prefix.rstrip())
         return size
 
     def _add_file(self, file, prefix, connector):
