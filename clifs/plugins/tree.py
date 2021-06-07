@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 
-import os
 import pathlib
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils import wrap_string, ansiescape_colors
+from clifs.utils import wrap_string, ansiescape_colors, size2str
 
 from colorama import init
 init()      # allow for ansi escape sequences to have colorful cmd output
@@ -30,6 +29,8 @@ class DirectoryTree(ClifsPlugin):
                             help="Root directory to generate tree")
         parser.add_argument("-do", "--dirs_only", action='store_true', default=False,
                             help="Get info only on directories")
+        parser.add_argument("-hs", "--hide_sizes", action='store_true', default=False,
+                            help="Hide size information")
 
     def __init__(self, args):
         super().__init__(args)
@@ -41,21 +42,12 @@ class DirectoryTree(ClifsPlugin):
         for entry in self._tree:
             print(entry)
 
-    @staticmethod
-    def _size2str(size, ansiescape_color=ansiescape_colors['cyan']):
-        if size >= (1024 * 1024 * 1024):
-            unit = "GB"
-            size = round(size / (1024 * 1024 * 1024), 2)
-        else:
-            unit = "MB"
-            size = round(size / (1024 * 1024), 2)
-        return wrap_string(f"size: {size} " + unit, prefix=ansiescape_color)
-
     def _add_directory(
-            self, directory, index=0, entries_count=0, prefix="", connector="", ansiescape_color=ansiescape_colors['yellow']
+            self, directory, index=0, entries_count=0, prefix="", connector="",
+            ansiescape_color=ansiescape_colors['yellow']
             ):
         idx_dir = len(self._tree)   # get index of current directory in tree list to attach size info
-        self._tree.append(f"{prefix}{connector}" + wrap_string(f"{directory.name}{os.sep}", prefix=ansiescape_color))
+        self._tree.append(f"{prefix}{connector}" + wrap_string(f"{directory.name}", prefix=ansiescape_color))
 
         if connector == "":     # for root dir
             pass
@@ -85,14 +77,21 @@ class DirectoryTree(ClifsPlugin):
             if entry.is_dir():
                 size += self._add_directory(entry, index, entries_count, prefix, connector)
             else:
-                size += self._add_file(entry, prefix, connector)
+                if self.dirs_only and self.hide_sizes:
+                    pass
+                else:
+                    size += self._add_file(entry, prefix, connector)
 
-        self._tree[idx_dir] = self._tree[idx_dir] + wrap_string(SPACE_PREFIX + self._size2str(size),
-                                                                prefix=ansiescape_color)
+        if not self.hide_sizes:
+            self._tree[idx_dir] = self._tree[idx_dir] + wrap_string("  " + size2str(size),
+                                                                    prefix=ansiescape_color)
         return size
 
     def _add_file(self, file, prefix, connector):
-        size = file.stat().st_size
+        size = file.stat().st_size if not self.hide_sizes else 0
         if not self.dirs_only:
-            self._tree.append(f"{prefix}{connector} {file.name}" + SPACE_PREFIX + self._size2str(size))
+            if not self.hide_sizes:
+                self._tree.append(f"{prefix}{connector} {file.name}" + "  " + size2str(size))
+            else:
+                self._tree.append(f"{prefix}{connector} {file.name}")
         return size

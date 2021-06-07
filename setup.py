@@ -14,6 +14,7 @@ setup(
         ],
         'clifs_plugins': [
             'tree = clifs.plugins.tree:DirectoryTree',
+            'du = clifs.plugins.disc_usage:DiscUsageExplorer',
         ],
      }
 )
