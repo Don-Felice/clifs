@@ -3,7 +3,7 @@
 
 import pathlib
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils import wrap_string, ansiescape_colors, size2str
+from clifs.utils_cli import wrap_string, ansiescape_colors, size2str
 
 from colorama import init
 init()      # allow for ansi escape sequences to have colorful cmd output
@@ -23,7 +23,7 @@ class DirectoryTree(ClifsPlugin):
     @staticmethod
     def init_parser(parser):
         """
-        Adding arguments to an argparse parser. Needed for all photoraspi_plugins.
+        Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
         parser.add_argument("root_dir", type=str, default=".", nargs='?',
                             help="Root directory to generate tree")

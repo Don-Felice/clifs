@@ -5,7 +5,8 @@ setup(
     name='clifs',
     version='0.1.0',
     author='Felix Segerer',
-    packages=['clifs'],
+    packages=['clifs',
+              'clifs.plugins'],
     license='LICENSE',
     description='Command line interface for basic file system operations.',
     entry_points={
@@ -15,6 +16,8 @@ setup(
         'clifs_plugins': [
             'tree = clifs.plugins.tree:DirectoryTree',
             'du = clifs.plugins.disc_usage:DiscUsageExplorer',
+            'copy = clifs.plugins.como:Copy',
+            'move = clifs.plugins.como:Move',
         ],
      }
 )

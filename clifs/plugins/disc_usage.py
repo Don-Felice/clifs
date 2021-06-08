@@ -4,7 +4,7 @@
 from pathlib import Path
 import shutil
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils import wrap_string, ansiescape_colors, size2str
+from clifs.utils_cli import wrap_string, ansiescape_colors, size2str, cli_bar
 
 
 from colorama import init
@@ -19,7 +19,7 @@ class DiscUsageExplorer(ClifsPlugin):
     @staticmethod
     def init_parser(parser):
         """
-        Adding arguments to an argparse parser. Needed for all photoraspi_plugins.
+        Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
         parser.add_argument("dirs", type=str, default=".", nargs='+',
                             help="Directories do get info from.")
@@ -59,6 +59,9 @@ class DiscUsageExplorer(ClifsPlugin):
             str_free = size2str(dict_usage['free'],
                                 ansiescape_color=color)
 
-            print(f"└── total: {str_total}    "
+            usage_bar = wrap_string(cli_bar(dict_usage['used'], dict_usage['total'], return_string=True), prefix=color)
+
+            print(f"  └── " + usage_bar + "    "
+                  f"total: {str_total}    "
                   f"used: {str_used}    "
                   f"free: {str_free}")

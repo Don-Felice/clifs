@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 ansiescape_colors = {
     'yellow': '\033[0;93m',
     'cyan': '\033[0;36m',
@@ -31,3 +32,16 @@ def size2str(size, ansiescape_color=ansiescape_colors['cyan']):
         unit = "MB"
         size = round(size / (1024**2), 2)
     return wrap_string(f"{size:6.2f} " + unit, prefix=ansiescape_color)
+
+
+def cli_bar(status, total, suffix='', return_string=False):
+    bar_len = 20
+    filled_len = int(round(bar_len * status / float(total)))
+
+    percents = round(100.0 * status / float(total), 1)
+    bar = '█' * filled_len + '-' * (bar_len - filled_len)
+    output = f'|{bar}| {percents:5}% {suffix}'
+    if return_string:
+        return output
+    else:
+        print(output + '\n', flush=True)

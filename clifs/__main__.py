@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 
-# external imports
 import argparse
 from pkg_resources import iter_entry_points
 
