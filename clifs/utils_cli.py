@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-ansiescape_colors = {
+ANSI_COLORS = {
     'yellow': '\033[0;93m',
     'cyan': '\033[0;36m',
     'red': '\033[0;31m',
@@ -14,11 +14,11 @@ ansiescape_colors = {
 }
 
 
-def wrap_string(string, prefix=ansiescape_colors['red'], suffix=ansiescape_colors['default']):
+def wrap_string(string, prefix=ANSI_COLORS['red'], suffix=ANSI_COLORS['default']):
     return prefix + string + suffix
 
 
-def size2str(size, ansiescape_color=ansiescape_colors['cyan']):
+def size2str(size, ansiescape_color=ANSI_COLORS['cyan']):
     if size >= (1024**5):
         unit = "PB"
         size = round(size / (1024**5), 2)
@@ -44,4 +44,4 @@ def cli_bar(status, total, suffix='', return_string=False):
     if return_string:
         return output
     else:
-        print(output + '\n', flush=True)
+        print(output, flush=True)

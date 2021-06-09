@@ -3,7 +3,7 @@
 
 import pathlib
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_cli import wrap_string, ansiescape_colors, size2str
+from clifs.utils_cli import wrap_string, ANSI_COLORS, size2str
 
 from colorama import init
 init()      # allow for ansi escape sequences to have colorful cmd output
@@ -44,7 +44,7 @@ class DirectoryTree(ClifsPlugin):
 
     def _add_directory(
             self, directory, index=0, entries_count=0, prefix="", connector="",
-            ansiescape_color=ansiescape_colors['yellow']
+            ansiescape_color=ANSI_COLORS['yellow']
             ):
         idx_dir = len(self._tree)   # get index of current directory in tree list to attach size info
         self._tree.append(f"{prefix}{connector}" + wrap_string(f"{directory.name}", prefix=ansiescape_color))
@@ -62,11 +62,11 @@ class DirectoryTree(ClifsPlugin):
         except PermissionError as err:
             print(wrap_string(f"Warning: no permission to access \"{directory}\". "
                               f"Size calculations of parent directories could be off.",
-                              prefix=ansiescape_colors['red']))
+                              prefix=ANSI_COLORS['red']))
             print(wrap_string(f"Error message: \"{err}\"",
-                              prefix=ansiescape_colors['red']))
+                              prefix=ANSI_COLORS['red']))
             self._tree[idx_dir] = self._tree[idx_dir] + wrap_string(SPACE_PREFIX + "no access",
-                                                                    prefix=ansiescape_colors['red'])
+                                                                    prefix=ANSI_COLORS['red'])
             return 0
 
         entries_count = len(entries)

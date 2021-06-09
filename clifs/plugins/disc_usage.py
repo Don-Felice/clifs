@@ -4,7 +4,7 @@
 from pathlib import Path
 import shutil
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_cli import wrap_string, ansiescape_colors, size2str, cli_bar
+from clifs.utils_cli import wrap_string, ANSI_COLORS, size2str, cli_bar
 
 
 from colorama import init
@@ -21,7 +21,7 @@ class DiscUsageExplorer(ClifsPlugin):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
-        parser.add_argument("dirs", type=str, default=".", nargs='+',
+        parser.add_argument("dirs", type=str, default=".", nargs='?',
                             help="Directories do get info from.")
 
     def __init__(self, args):
@@ -44,18 +44,19 @@ class DiscUsageExplorer(ClifsPlugin):
         print("")
         for directory, dict_usage in self._dict_usage.items():
             name_dir = Path(directory).name if not Path(directory).name == "" else directory
-            print(name_dir + "    " + wrap_string("(" + directory + ")", prefix=ansiescape_colors['gray']))
+            path_dir = str(Path(directory).resolve())
+            print(name_dir + "    " + wrap_string("(" + path_dir + ")", prefix=ANSI_COLORS['gray']))
             if dict_usage['used'] / dict_usage['total'] > 0.9:
-                color = ansiescape_colors['red']
+                color = ANSI_COLORS['red']
             elif dict_usage['used'] / dict_usage['total'] > 0.70:
-                color = ansiescape_colors['yellow']
+                color = ANSI_COLORS['yellow']
             else:
-                color = ansiescape_colors['default']
+                color = ANSI_COLORS['default']
 
             str_total = size2str(dict_usage['total'],
-                                 ansiescape_color=ansiescape_colors['default'])
+                                 ansiescape_color=ANSI_COLORS['default'])
             str_used = size2str(dict_usage['used'],
-                                ansiescape_color=ansiescape_colors['default'])
+                                ansiescape_color=ANSI_COLORS['default'])
             str_free = size2str(dict_usage['free'],
                                 ansiescape_color=color)
 
