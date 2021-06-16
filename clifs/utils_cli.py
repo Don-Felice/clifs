@@ -34,10 +34,9 @@ def size2str(size, ansiescape_color=ANSI_COLORS['cyan']):
     return wrap_string(f"{size:6.2f} " + unit, prefix=ansiescape_color)
 
 
-def cli_bar(status, total, suffix='', return_string=False):
-    bar_len = 20
-    filled_len = int(round(bar_len * status / float(total)))
+def cli_bar(status, total, suffix='', return_string=False, bar_len=20):
 
+    filled_len = int(round(bar_len * status / float(total)))
     percents = round(100.0 * status / float(total), 1)
     bar = '█' * filled_len + '-' * (bar_len - filled_len)
     output = f'|{bar}| {percents:5}% {suffix}'

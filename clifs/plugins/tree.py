@@ -88,7 +88,11 @@ class DirectoryTree(ClifsPlugin):
         return size
 
     def _add_file(self, file, prefix, connector):
-        size = file.stat().st_size if not self.hide_sizes else 0
+        try:
+            size = file.stat().st_size if not self.hide_sizes else 0
+        except FileNotFoundError:
+            file_long = pathlib.Path("\\\\?\\" + str(file))     # handle long paths in windows systems
+            size = file_long.stat().st_size if not self.hide_sizes else 0
         if not self.dirs_only:
             if not self.hide_sizes:
                 self._tree.append(f"{prefix}{connector} {file.name}" + "  " + size2str(size))

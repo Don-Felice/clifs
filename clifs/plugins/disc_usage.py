@@ -22,7 +22,7 @@ class DiscUsageExplorer(ClifsPlugin):
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
         parser.add_argument("dirs", type=str, default=".", nargs='?',
-                            help="Directories do get info from.")
+                            help="Directory or directories do get info from")
 
     def __init__(self, args):
         super().__init__(args)
@@ -62,7 +62,7 @@ class DiscUsageExplorer(ClifsPlugin):
 
             usage_bar = wrap_string(cli_bar(dict_usage['used'], dict_usage['total'], return_string=True), prefix=color)
 
-            print(f"  └── " + usage_bar + "    "
+            print(f"  └── {usage_bar}    "
                   f"total: {str_total}    "
                   f"used: {str_used}    "
                   f"free: {str_free}")

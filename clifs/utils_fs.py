@@ -3,8 +3,21 @@
 
 import shutil
 from pathlib import Path
+import re
 
 from clifs.utils_cli import cli_bar
+
+
+def clean_str(string):
+    # TODO: Define
+    pass
+
+
+def get_files_by_filterstring(dir_source, filterstring=None, recursive=False):
+    pattern_search = '*' + filterstring + '*' if filterstring else '*'
+    if recursive:
+        pattern_search = '**/' + pattern_search
+    return (file for file in dir_source.glob(pattern_search) if not file.is_dir())
 
 
 def como(dir_source, dir_dest, move=False, recursive=False, path_filterlist=None, filterstring=None, dry_run=False):
@@ -22,15 +35,7 @@ def como(dir_source, dir_dest, move=False, recursive=False, path_filterlist=None
     dir_source = Path(dir_source)
     dir_dest = Path(dir_dest)
 
-    if filterstring:
-        pattern_search = '*' + filterstring + '*'
-    else:
-        pattern_search = '*'
-
-    if recursive:
-        files = (file for file in dir_source.rglob(pattern_search) if not file.is_dir())
-    else:
-        files = (file for file in dir_source.glob(pattern_search) if not file.is_dir())
+    files = get_files_by_filterstring(dir_source, filterstring=filterstring, recursive=recursive)
 
     if path_filterlist:
         list2copy = open(path_filterlist).read().splitlines()
@@ -38,23 +43,42 @@ def como(dir_source, dir_dest, move=False, recursive=False, path_filterlist=None
     else:
         files2copy = list(files)
 
-    if move:
-        print('Moving files from:\n', dir_source, "\n to \n", dir_dest)
-    else:
-        print('Copying files from:\n', dir_source, "\n to \n", dir_dest)
+    str_process = 'moving' if move else 'copying'
+    print(f'Will start {str_process} {len(files2copy)} files from:\n{dir_source}\nto\n{dir_dest}')
     print('-----------------------------------------------------')
 
-    num_file = 0
-    for file in files2copy:
-        if move:
-            print('moving: ' + file.name)
+    if files2copy:
+        for num_file, file in enumerate(files2copy, 1):
+            print(f'{str_process}: {file.name}')
             if not dry_run:
-                shutil.move(str(file), str(dir_dest / file.name))
-        else:
-            print('copying: ' + file.name)
-            if not dry_run:
-                shutil.copy2(str(file), str(dir_dest / file.name))
-        num_file += 1
-        cli_bar(num_file, len(files2copy), suffix='of files copied')
+                if move:
+                    shutil.move(str(file), str(dir_dest / file.name))
+                else:
+                    shutil.copy2(str(file), str(dir_dest / file.name))
+            cli_bar(num_file, len(files2copy), suffix='of files processed')
 
-    print(f"Hurray, {num_file} files have been copied/moved.")
+        str_process = 'moved' if move else 'copied'
+        print(f"Hurray, {num_file} files have been {str_process}.")
+    else:
+        print('No files to process.')
+
+
+def rename_files(dir_source, re_pattern, replacement, filterstring=None, recursive=False, dry_run=False):
+
+    dir_source = Path(dir_source)
+    files = list(get_files_by_filterstring(dir_source, filterstring=filterstring, recursive=recursive))
+
+    if files:
+        print(f'Renaming {len(files)} files.')
+        for num_file, file in enumerate(files, 1):
+            name_old = file.name
+            name_new = re.sub(re_pattern, replacement, name_old)
+            path_new = file.parent / name_new
+
+            cli_bar(num_file, len(files), suffix=f'    {name_old:35} -> {name_new:35}')
+            if not dry_run:
+                file.rename(path_new)
+
+        print(f"Hurray, {num_file} files have been renamed.")
+    else:
+        print('No files to process.')
