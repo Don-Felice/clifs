@@ -18,6 +18,7 @@ setup(
             'du = clifs.plugins.disc_usage:DiscUsageExplorer',
             'copy = clifs.plugins.como:Copy',
             'move = clifs.plugins.como:Move',
+            'ren = clifs.plugins.rename:FileRenamer',
         ],
      }
 )
