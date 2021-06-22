@@ -20,8 +20,11 @@ def _get_files_by_filterstring(dir_source, filterstring=None, recursive=False):
     return (file for file in dir_source.glob(pattern_search) if not file.is_dir())
 
 
-def _get_path_dest(path_src, path_file, path_out):
-    return Path(str(path_file).replace(str(path_src), str(path_out)))
+def _get_path_dest(path_src, path_file, path_out, flatten=False):
+    if flatten:
+        return path_out / path_file.name
+    else:
+        return Path(str(path_file).replace(str(path_src), str(path_out)))
 
 
 def como(dir_source, dir_dest, move=False, recursive=False, path_filterlist=None, filterstring=None, flatten=False, dry_run=False):
@@ -39,6 +42,8 @@ def como(dir_source, dir_dest, move=False, recursive=False, path_filterlist=None
     dir_source = Path(dir_source)
     dir_dest = Path(dir_dest)
 
+    dir_dest.parent.mkdir(exist_ok=True, parents=True)
+
     files = _get_files_by_filterstring(dir_source, filterstring=filterstring, recursive=recursive)
 
     if path_filterlist:
@@ -55,7 +60,7 @@ def como(dir_source, dir_dest, move=False, recursive=False, path_filterlist=None
         for num_file, file in enumerate(files2copy, 1):
             print(f'{str_process}: {file.name}')
             if not dry_run:
-                filepath_dest = _get_path_dest(dir_source, file, dir_dest) if not flatten else (dir_dest / file.name)
+                filepath_dest = _get_path_dest(dir_source, file, dir_dest, flatten=flatten)
                 if not flatten:
                     filepath_dest.parent.mkdir(exist_ok=True, parents=True)
                 if move:
