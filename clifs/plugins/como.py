@@ -27,7 +27,7 @@ def init_parser_como(parser):
                         help="Don't touch anything")
 
 
-class Copy(ClifsPlugin):
+class FileCopier(ClifsPlugin):
     """
     Copy files
     """
@@ -52,7 +52,7 @@ class Copy(ClifsPlugin):
              dry_run=self.dryrun)
 
 
-class Move(ClifsPlugin):
+class FileMover(ClifsPlugin):
     """
     Move files
     """

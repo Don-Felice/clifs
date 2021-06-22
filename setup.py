@@ -16,8 +16,8 @@ setup(
         'clifs_plugins': [
             'tree = clifs.plugins.tree:DirectoryTree',
             'du = clifs.plugins.disc_usage:DiscUsageExplorer',
-            'copy = clifs.plugins.como:Copy',
-            'move = clifs.plugins.como:Move',
+            'copy = clifs.plugins.como:FileCopier',
+            'move = clifs.plugins.como:FileMover',
             'ren = clifs.plugins.rename:FileRenamer',
         ],
      }
