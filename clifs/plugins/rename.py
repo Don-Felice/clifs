@@ -29,12 +29,12 @@ class FileRenamer(ClifsPlugin):
                             help="Substring identifying files to be renamed.")
         parser.add_argument("-r", "--recursive", action='store_true',
                             help="Search recursively in source folder")
-        parser.add_argument("-dr", "--dryrun", action='store_true',
-                            help="Don't touch anything")
+        parser.add_argument("-sp", "--skip_preview", action='store_true',
+                            help="Skip preview on what would happen and directly rename. Only for the brave...")
 
     def __init__(self, args):
         super().__init__(args)
 
     def run(self):
         rename_files(self.dir_source, self.re_pattern, self.substitute,
-                     filterstring=self.filterstring, recursive=self.recursive, dry_run=self.dryrun)
+                     filterstring=self.filterstring, recursive=self.recursive, skip_preview=self.skip_preview)
