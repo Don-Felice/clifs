@@ -6,7 +6,7 @@ import re
 import shutil
 import sys
 
-from clifs.utils_cli import wrap_string, cli_bar
+from clifs.utils_cli import wrap_string, cli_bar, ANSI_COLORS
 
 
 def _find_bad_char(string):
@@ -44,8 +44,25 @@ def _user_query(message):
         return False
 
 
-def como(dir_source, dir_dest, move=False, recursive=False,
-         path_filterlist=None, filterstring=None, flatten=False, dry_run=False):
+def _get_unique_path(path_candidate, paths_taken):
+    name_file = path_candidate.stem
+    if path_candidate in paths_taken:
+        count_match = re.match('.* \((\d)\)$', name_file)
+        if count_match:
+            count = int(count_match.group(1)) + 1
+            name_file_new = ' '.join(name_file.split(' ')[0:-1]) + f' ({count})'
+        else:
+            name_file_new = name_file + ' (2)'
+        path_new = path_candidate.parent / Path(name_file_new + path_candidate.suffix)
+        return _get_unique_path(path_new, paths_taken)
+    else:
+        paths_taken.append(path_candidate)
+        return path_candidate
+
+
+def como(dir_source, dir_dest, *, move=False, recursive=False,
+         path_filterlist=None, filterstring=None,
+         skip_existing=False, keep_all=False, flatten=False, dry_run=False):
     """
     COpy or MOve files
 
@@ -57,6 +74,9 @@ def como(dir_source, dir_dest, move=False, recursive=False,
     :param filterstring:
     :param dry_run:
     """
+    assert not (skip_existing and keep_all), 'You can only choose to either skip existing files ' \
+                                             'or keep both versions. Choose wisely!'
+
     dir_source = Path(dir_source)
     dir_dest = Path(dir_dest)
 
@@ -67,6 +87,12 @@ def como(dir_source, dir_dest, move=False, recursive=False,
     if path_filterlist:
         files2process = _filter_by_list(files2process, path_filterlist)
 
+    # get existing files
+    if skip_existing or keep_all:
+        files_present = [file for file in dir_dest.rglob('*') if not file.is_dir()]
+    elif flatten:
+        files_present = []
+
     str_process = 'moving' if move else 'copying'
     print(f'Will start {str_process} {len(files2process)} files from:\n{dir_source}\nto\n{dir_dest}')
     print('-----------------------------------------------------')
@@ -74,16 +100,26 @@ def como(dir_source, dir_dest, move=False, recursive=False,
     if files2process:
         num_files2process = len(files2process)
         for num_file, file in enumerate(files2process, 1):
-            print(f'{str_process}: {file.name}')
+            txt_report = f'Last: {file.name}'
+            filepath_dest = _get_path_dest(dir_source, file, dir_dest, flatten=flatten)
+            if skip_existing and filepath_dest in files_present:
+                txt_report = wrap_string(f'Skipped as already present:{file.name}', ANSI_COLORS['yellow'])
+                cli_bar(num_file, num_files2process, suffix='of files processed. ' + txt_report)
+                continue
+            elif keep_all:
+                filepath_dest_new = _get_unique_path(filepath_dest, files_present)
+                if not filepath_dest_new == filepath_dest:
+                    txt_report = wrap_string(f'Changed name as already present: '
+                                             f'{filepath_dest.name} -> {filepath_dest_new.name}', ANSI_COLORS['yellow'])
+                    filepath_dest = filepath_dest_new
             if not dry_run:
-                filepath_dest = _get_path_dest(dir_source, file, dir_dest, flatten=flatten)
                 if not flatten:
                     filepath_dest.parent.mkdir(exist_ok=True, parents=True)
                 if move:
                     shutil.move(str(file), str(filepath_dest))
                 else:
                     shutil.copy2(str(file), str(filepath_dest))
-            cli_bar(num_file, num_files2process, suffix='of files processed')
+            cli_bar(num_file, num_files2process, suffix=' of files processed. ' + txt_report)
 
         str_process = 'moved' if move else 'copied'
         print(f"Hurray, {num_file} files have been {str_process}.")

@@ -19,6 +19,10 @@ def init_parser_como(parser):
                         help="Path to a file containing a list of files to copy/move (no header, sep.: \'\\n\')")
     parser.add_argument("-fs", "--filterstring", default=None,
                         help="Substring identifying files to be copied. not case sensitive.")
+    parser.add_argument("-se", "--skip_existing", action='store_true',
+                        help="Do nothing if file already exists in destination (instead of replacing).")
+    parser.add_argument("-ka", "--keep_all", action='store_true',
+                        help="Keep both versions if a file already exists in destination (instead of replacing).")
     parser.add_argument("-flt", "--flatten", action='store_true',
                         help="Flatten folder structure in output directory when running in recursive mode. "
                              "Be careful with files of identical name in different subfolders as "
@@ -48,6 +52,8 @@ class FileCopier(ClifsPlugin):
              recursive=self.recursive,
              path_filterlist=self.filterlist,
              filterstring=self.filterstring,
+             skip_existing=self.skip_existing,
+             keep_all=self.keep_all,
              flatten=self.flatten,
              dry_run=self.dryrun)
 
