@@ -20,11 +20,12 @@ class FileRenamer(ClifsPlugin):
         parser.add_argument("-re", "--re_pattern", default='.*',
                             help="Pattern identifying the substring to be replaced. "
                                  "Supports syntax from regex module (https://docs.python.org/3/library/re.html).")
-        parser.add_argument("-s", "--substitute",
+        parser.add_argument("-s", "--substitute", default='',
                             help="String to use as replacement. "
                                  "You can use \\1 \\2 etc. to refer to matching groups. "
                                  "A pattern like \"(.+)\\.(.+)\" in combination "
-                                 "with a replacement like \"\\1_suffix.\\2\" will append suffixes.")
+                                 "with a replacement like \"\\1_suffix.\\2\" will append suffixes. "
+                                 "Defaults to empty string")
         parser.add_argument("-fs", "--filterstring", default=None,
                             help="Substring identifying files to be renamed.")
         parser.add_argument("-r", "--recursive", action='store_true',

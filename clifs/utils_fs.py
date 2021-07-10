@@ -60,12 +60,22 @@ def _get_unique_path(path_candidate, paths_taken):
         return path_candidate
 
 
+def _print_rename_message(message, num_file, num_files_all, preview_mode=False):
+    if preview_mode:
+        print("    " + message)
+    else:
+        cli_bar(num_file, num_files_all, suffix=f'    {message}')
+
+
 def como(dir_source, dir_dest, *, move=False, recursive=False,
          path_filterlist=None, filterstring=None,
          skip_existing=False, keep_all=False, flatten=False, dry_run=False):
     """
     COpy or MOve files
 
+    :param skip_existing:
+    :param keep_all:
+    :param flatten:
     :param dir_source:
     :param dir_dest:
     :param move:
@@ -131,49 +141,74 @@ def rename_files(dir_source, re_pattern, replacement,
                  filterstring=None, recursive=False, skip_preview=False):
 
     dir_source = Path(dir_source)
+    files_present = [file for file in dir_source.rglob('*') if not file.is_dir()]
     files2process = _get_files_by_filterstring(dir_source, filterstring=filterstring, recursive=recursive)
 
     if files2process:
         if not skip_preview:
-            _rename_files(files2process, re_pattern, replacement, preview_only=True)
+            files_present = [file for file in dir_source.rglob('*') if not file.is_dir()]
+            _rename_files(files2process, re_pattern, replacement,
+                          files_present=files_present.copy(), preview_mode=True)
             if not _user_query("If you want to apply renaming, give me a \"yes\" or \"y\" now!"):
                 print("Will not rename for now. See you soon.")
                 sys.exit(0)
 
-        num_file = _rename_files(files2process, re_pattern, replacement, preview_only=False)
-        print(f"Hurray, {num_file} files have been processed.")
+        num_files_proc, num_files_ren = _rename_files(files2process, re_pattern, replacement,
+                                                      files_present=files_present, preview_mode=False)
+        print(f"Hurray, {num_files_proc} files have been processed, {num_files_ren} have been renamed.")
     else:
         print('No files to process.')
 
 
-def _rename_files(files2process, re_pattern, replacement, preview_only=True):
+def _rename_files(files2process, re_pattern, replacement, *, files_present, preview_mode=True):
     num_files2process = len(files2process)
     print(f'Renaming {num_files2process} files.')
-    if preview_only:
+    if preview_mode:
         print("Preview:")
 
     num_bad_results = 0
+    num_name_conflicts = 0
+    num_files_renamed = 0
     for num_file, file in enumerate(files2process, 1):
         name_old = file.name
         name_new = re.sub(re_pattern, replacement, name_old)
-        message_rename = f"{name_old:35} -> {name_new:35}"
 
+        if name_new == name_old:    # skip files that are not renamed
+            message_rename = wrap_string(f"{name_old:35} -> {name_new:35}", ANSI_COLORS['gray'])
+            _print_rename_message(message_rename, num_file, num_files2process, preview_mode=preview_mode)
+            continue
+
+        message_rename = f"{name_old:35} -> {name_new:35}"
+        # check if renaming would result in bad characters
         found_bad_chars = _find_bad_char(name_new)
         if found_bad_chars:
             str_bad_chars = ",".join(found_bad_chars)
             message_rename += wrap_string("    Warning: not doing renaming as it would result "
                                           f"in bad characters \"{str_bad_chars}\" ")
             num_bad_results += 1
-
-        if preview_only:
-            print("    " + message_rename)
         else:
+            # check if renaming would result in name conflict
             path_new = file.parent / name_new
-            cli_bar(num_file, num_files2process, suffix=f'    {message_rename}')
-            if not found_bad_chars:
-                file.rename(path_new)
+            files_present.remove(file)
+            path_checked = _get_unique_path(path_new, files_present)
+            if not path_new == path_checked:
+                path_new = path_checked
+                name_new = path_checked.name
+                message_rename = f"{name_old:35} -> {name_new:35}"
+                message_rename += wrap_string("    Warning: resulting name would already be present in folder. "
+                                              "Will add numbering suffix.", ANSI_COLORS['yellow'])
+            num_name_conflicts += 1
+
+        _print_rename_message(message_rename, num_file, num_files2process, preview_mode=preview_mode)
+        if not preview_mode and not found_bad_chars and not name_old == name_new:
+            file.rename(path_new)
+            num_files_renamed +=1
 
     if num_bad_results:
         print(wrap_string(f"Warning: {num_bad_results} out of {num_files2process} "
                           f"files not renamed as it would result in bad characters."))
-    return num_file
+    if num_name_conflicts:
+        print(wrap_string(f"Warning: {num_name_conflicts} out of {num_files2process} "
+                          f"renamings would have resulted in name conflicts. "
+                          f"Added numbering suffices to get unique names."))
+    return num_file, num_files_renamed
