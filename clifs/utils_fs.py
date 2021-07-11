@@ -56,7 +56,6 @@ def _get_unique_path(path_candidate, paths_taken):
         path_new = path_candidate.parent / Path(name_file_new + path_candidate.suffix)
         return _get_unique_path(path_new, paths_taken)
     else:
-        paths_taken.append(path_candidate)
         return path_candidate
 
 
@@ -148,7 +147,7 @@ def rename_files(dir_source, re_pattern, replacement,
         if not skip_preview:
             files_present = [file for file in dir_source.rglob('*') if not file.is_dir()]
             _rename_files(files2process, re_pattern, replacement,
-                          files_present=files_present.copy(), preview_mode=True)
+                          files_present=files_present, preview_mode=True)
             if not _user_query("If you want to apply renaming, give me a \"yes\" or \"y\" now!"):
                 print("Will not rename for now. See you soon.")
                 sys.exit(0)
@@ -165,44 +164,49 @@ def _rename_files(files2process, re_pattern, replacement, *, files_present, prev
     print(f'Renaming {num_files2process} files.')
     if preview_mode:
         print("Preview:")
+        files_present = files_present.copy()
 
     num_bad_results = 0
     num_name_conflicts = 0
     num_files_renamed = 0
-    for num_file, file in enumerate(files2process, 1):
-        name_old = file.name
+    for num_file, path_file in enumerate(files2process, 1):
+        name_old = path_file.name
         name_new = re.sub(re_pattern, replacement, name_old)
+        message_rename = f"{name_old:35} -> {name_new:35}"
 
-        if name_new == name_old:    # skip files that are not renamed
-            message_rename = wrap_string(f"{name_old:35} -> {name_new:35}", ANSI_COLORS['gray'])
+        # skip files that are not renamed
+        if name_new == name_old:
+            message_rename = wrap_string(message_rename, ANSI_COLORS['gray'])
             _print_rename_message(message_rename, num_file, num_files2process, preview_mode=preview_mode)
             continue
 
-        message_rename = f"{name_old:35} -> {name_new:35}"
-        # check if renaming would result in bad characters
+        # skip files if renaming would result in bad characters
         found_bad_chars = _find_bad_char(name_new)
         if found_bad_chars:
             str_bad_chars = ",".join(found_bad_chars)
             message_rename += wrap_string("    Warning: not doing renaming as it would result "
                                           f"in bad characters \"{str_bad_chars}\" ")
             num_bad_results += 1
-        else:
-            # check if renaming would result in name conflict
-            path_new = file.parent / name_new
-            files_present.remove(file)
-            path_checked = _get_unique_path(path_new, files_present)
-            if not path_new == path_checked:
-                path_new = path_checked
-                name_new = path_checked.name
-                message_rename = f"{name_old:35} -> {name_new:35}"
-                message_rename += wrap_string("    Warning: resulting name would already be present in folder. "
-                                              "Will add numbering suffix.", ANSI_COLORS['yellow'])
+            _print_rename_message(message_rename, num_file, num_files2process, preview_mode=preview_mode)
+            continue
+
+        # make sure resulting paths are unique
+        path_file_new = path_file.parent / name_new
+        files_present.remove(path_file)
+        path_file_unique = _get_unique_path(path_file_new, files_present)
+        files_present.append(path_file_unique)
+        if not path_file_new == path_file_unique:
+            path_file_new = path_file_unique
+            name_new = path_file_unique.name
+            message_rename = f"{name_old:35} -> {name_new:35}"
+            message_rename += wrap_string("    Warning: resulting name would already be present in folder. "
+                                          "Will add numbering suffix.", ANSI_COLORS['yellow'])
             num_name_conflicts += 1
 
         _print_rename_message(message_rename, num_file, num_files2process, preview_mode=preview_mode)
-        if not preview_mode and not found_bad_chars and not name_old == name_new:
-            file.rename(path_new)
-            num_files_renamed +=1
+        if not preview_mode and not name_old == name_new:
+            path_file.rename(path_file_new)
+            num_files_renamed += 1
 
     if num_bad_results:
         print(wrap_string(f"Warning: {num_bad_results} out of {num_files2process} "
