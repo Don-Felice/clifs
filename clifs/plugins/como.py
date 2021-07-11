@@ -79,4 +79,7 @@ class FileMover(ClifsPlugin):
              recursive=self.recursive,
              path_filterlist=self.filterlist,
              filterstring=self.filterstring,
+             skip_existing=self.skip_existing,
+             keep_all=self.keep_all,
+             flatten=self.flatten,
              dry_run=self.dryrun)

@@ -44,3 +44,13 @@ def cli_bar(status, total, suffix='', return_string=False, bar_len=20):
         return output
     else:
         print(output, flush=True)
+
+
+def user_query(message):
+    yes = {'yes', 'y'}
+    print(message)
+    choice = input().lower()
+    if choice in yes:
+        return True
+    else:
+        return False

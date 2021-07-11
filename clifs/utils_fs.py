@@ -6,7 +6,7 @@ import re
 import shutil
 import sys
 
-from clifs.utils_cli import wrap_string, cli_bar, ANSI_COLORS
+from clifs.utils_cli import wrap_string, cli_bar, user_query, ANSI_COLORS
 
 
 def _find_bad_char(string):
@@ -34,20 +34,10 @@ def _filter_by_list(files, path_list):
     return [i for i in files if i.name in list_filter]
 
 
-def _user_query(message):
-    yes = {'yes', 'y'}
-    print(message)
-    choice = input().lower()
-    if choice in yes:
-        return True
-    else:
-        return False
-
-
 def _get_unique_path(path_candidate, paths_taken):
     name_file = path_candidate.stem
     if path_candidate in paths_taken:
-        count_match = re.match('.* \((\d)\)$', name_file)
+        count_match = re.match(r'.* \((\d)\)$', name_file)
         if count_match:
             count = int(count_match.group(1)) + 1
             name_file_new = ' '.join(name_file.split(' ')[0:-1]) + f' ({count})'
@@ -145,10 +135,9 @@ def rename_files(dir_source, re_pattern, replacement,
 
     if files2process:
         if not skip_preview:
-            files_present = [file for file in dir_source.rglob('*') if not file.is_dir()]
             _rename_files(files2process, re_pattern, replacement,
                           files_present=files_present, preview_mode=True)
-            if not _user_query("If you want to apply renaming, give me a \"yes\" or \"y\" now!"):
+            if not user_query("If you want to apply renaming, give me a \"yes\" or \"y\" now!"):
                 print("Will not rename for now. See you soon.")
                 sys.exit(0)
 
