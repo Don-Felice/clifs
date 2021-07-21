@@ -9,12 +9,14 @@ import sys
 def main():
 
     parser = argparse.ArgumentParser()
-    commands = parser.add_subparsers(title='Available plugins', dest='plugin')
+    commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
     plugins = {}
     for entry_point in iter_entry_points("clifs_plugins"):
         plugins[entry_point.name] = entry_point.load()
-        subparser = commands.add_parser(entry_point.name, help=plugins[entry_point.name].__doc__)
+        subparser = commands.add_parser(
+            entry_point.name, help=plugins[entry_point.name].__doc__
+        )
         plugins[entry_point.name].init_parser(parser=subparser)
 
     if len(sys.argv) == 1:

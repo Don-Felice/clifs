@@ -2,23 +2,22 @@ from setuptools import setup
 
 
 setup(
-    name='clifs',
-    version='0.1.0',
-    author='Felix Segerer',
-    packages=['clifs',
-              'clifs.plugins'],
-    license='LICENSE',
-    description='Command line interface for basic file system operations.',
+    name="clifs",
+    version="0.1.0",
+    author="Felix Segerer",
+    packages=["clifs", "clifs.plugins"],
+    license="LICENSE",
+    description="Command line interface for basic file system operations.",
     entry_points={
-        'console_scripts': [
-            'clifs = clifs.__main__:main',
+        "console_scripts": [
+            "clifs = clifs.__main__:main",
         ],
-        'clifs_plugins': [
-            'tree = clifs.plugins.tree:DirectoryTree',
-            'du = clifs.plugins.disc_usage:DiscUsageExplorer',
-            'copy = clifs.plugins.como:FileCopier',
-            'move = clifs.plugins.como:FileMover',
-            'ren = clifs.plugins.rename:FileRenamer',
+        "clifs_plugins": [
+            "tree = clifs.plugins.tree:DirectoryTree",
+            "du = clifs.plugins.disc_usage:DiscUsageExplorer",
+            "copy = clifs.plugins.como:FileCopier",
+            "move = clifs.plugins.como:FileMover",
+            "ren = clifs.plugins.rename:FileRenamer",
         ],
-     }
+    },
 )
