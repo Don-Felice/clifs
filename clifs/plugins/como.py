@@ -28,8 +28,24 @@ def init_parser_como(parser):
         "-fl",
         "--filterlist",
         default=None,
-        help="Path to a file containing a list of files to copy/move "
-        "(no header, sep.: '\\n')",
+        help="Path to a txt or csv file containing a list of files to copy/move."
+        "In case of a CSV, separator and header can be provided additionally. "
+        "If no header is provided, "
+        "each line in the file is read as individual item name.",
+    )
+    parser.add_argument(
+        "-flh",
+        "--filterlistheader",
+        default=None,
+        help="Header of the column to use as filter from a csv provided as filter list."
+        " If no header is provided, "
+        "each line in the file is read as individual item name.",
+    )
+    parser.add_argument(
+        "-fls",
+        "--filterlistsep",
+        default=",",
+        help="Separator to use for csv provided as filter list. Default: ','",
     )
     parser.add_argument(
         "-fs",
@@ -89,6 +105,8 @@ class FileCopier(ClifsPlugin):
             move=False,
             recursive=self.recursive,
             path_filterlist=self.filterlist,
+            header_filterlist=self.filterlistheader,
+            sep_filterlist=self.filterlistsep,
             filterstring=self.filterstring,
             skip_existing=self.skip_existing,
             keep_all=self.keep_all,
@@ -119,6 +137,8 @@ class FileMover(ClifsPlugin):
             move=True,
             recursive=self.recursive,
             path_filterlist=self.filterlist,
+            header_filterlist=self.filterlistheader,
+            sep_filterlist=self.filterlistsep,
             filterstring=self.filterstring,
             skip_existing=self.skip_existing,
             keep_all=self.keep_all,

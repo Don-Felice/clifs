@@ -21,7 +21,7 @@ class ClifsPlugin(ABC):
     @abstractmethod
     def __init__(self, args):
         """
-        Converts arguments to class attributes.
+        Converts arguments to instance attributes.
         """
         for arg in vars(args):
             setattr(self, arg, getattr(args, arg))

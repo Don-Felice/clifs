@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-
+import csv
 from pathlib import Path
 import re
 import shutil
 import sys
+
 
 from clifs.utils_cli import wrap_string, cli_bar, user_query, ANSI_COLORS
 
@@ -29,8 +30,24 @@ def _get_path_dest(path_src, path_file, path_out, flatten=False):
         return Path(str(path_file).replace(str(path_src), str(path_out)))
 
 
-def _filter_by_list(files, path_list):
-    list_filter = open(path_list).read().splitlines()
+def _list_from_csv(path_csv, header, delimiter):
+    if not header:
+        res_list = path_csv.open().read().splitlines()
+    else:
+        with path_csv.open(newline='') as infile:
+            reader = csv.DictReader(infile, delimiter=delimiter)
+            res_list = []
+            for row in reader:
+                try:
+                    res_list.append(row[header])
+                except KeyError:
+                    print(f"Provided csv does not contain header '{header}'. "
+                          f"Found headers: {list(row.keys())}")
+                    raise
+    return res_list
+
+
+def _filter_by_list(files, list_filter):
     return [i for i in files if i.name in list_filter]
 
 
@@ -65,26 +82,14 @@ def como(
     move=False,
     recursive=False,
     path_filterlist=None,
+    header_filterlist=None,
+    sep_filterlist=None,
     filterstring=None,
     skip_existing=False,
     keep_all=False,
     flatten=False,
     dry_run=False,
 ):
-    """
-    COpy or MOve files
-
-    :param skip_existing:
-    :param keep_all:
-    :param flatten:
-    :param dir_source:
-    :param dir_dest:
-    :param move:
-    :param recursive:
-    :param path_filterlist:
-    :param filterstring:
-    :param dry_run:
-    """
     assert not (skip_existing and keep_all), (
         "You can only choose to either skip existing files "
         "or keep both versions. Choose wisely!"
@@ -100,7 +105,9 @@ def como(
     )
 
     if path_filterlist:
-        files2process = _filter_by_list(files2process, path_filterlist)
+        path_filterlist = Path(path_filterlist)
+        list_filter = _list_from_csv(path_filterlist, header_filterlist, sep_filterlist)
+        files2process = _filter_by_list(files2process, list_filter)
 
     # get existing files
     if skip_existing or keep_all:
