@@ -26,7 +26,7 @@ class DiscUsageExplorer(ClifsPlugin):
             "dirs",
             type=str,
             default=".",
-            nargs="?",
+            nargs="*",
             help="Directory or directories do get info from.",
         )
 
