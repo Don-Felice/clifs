@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
 
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_fs import rename_files
+from clifs.utils_fs import FileGetterMixin, rename_files
 
 
-class FileRenamer(ClifsPlugin):
+class FileRenamer(ClifsPlugin, FileGetterMixin):
     """
     Regex-based file renaming.
     """
@@ -15,9 +16,9 @@ class FileRenamer(ClifsPlugin):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
-        parser.add_argument(
-            "dir_source", type=str, help="Folder with files to rename from"
-        )
+        # add args from FileGetterMixin to arg parser
+        super(FileRenamer, FileRenamer).init_parser_mixin(parser)
+
         parser.add_argument(
             "-re",
             "--re_pattern",
@@ -37,18 +38,6 @@ class FileRenamer(ClifsPlugin):
             "Defaults to empty string",
         )
         parser.add_argument(
-            "-fs",
-            "--filterstring",
-            default=None,
-            help="Substring identifying files to be renamed.",
-        )
-        parser.add_argument(
-            "-r",
-            "--recursive",
-            action="store_true",
-            help="Search recursively in source folder",
-        )
-        parser.add_argument(
             "-sp",
             "--skip_preview",
             action="store_true",
@@ -58,13 +47,20 @@ class FileRenamer(ClifsPlugin):
 
     def __init__(self, args):
         super().__init__(args)
+        self.dir_source = Path(self.dir_source)
+        self.files2process = self.get_files2process(
+            dir_source=self.dir_source,
+            recursive=self.recursive,
+            path_filterlist=self.filterlist,
+            header_filterlist=self.filterlistheader,
+            sep_filterlist=self.filterlistsep,
+            filterstring=self.filterstring,
+        )
 
     def run(self):
         rename_files(
-            self.dir_source,
+            self.files2process,
             self.re_pattern,
             self.substitute,
-            filterstring=self.filterstring,
-            recursive=self.recursive,
             skip_preview=self.skip_preview,
         )

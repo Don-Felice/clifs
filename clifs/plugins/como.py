@@ -1,58 +1,16 @@
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
 
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_fs import como
+from clifs.utils_fs import FileGetterMixin, como
 
 
 def init_parser_como(parser):
     """
     Adding arguments to an argparse parser. Needed for all clifs_plugins.
     """
-    parser.add_argument(
-        "dir_source",
-        type=str,
-        help="Folder with files to copy/move from"
-    )
-    parser.add_argument(
-        "dir_dest",
-        type=str,
-        help="Folder to copy/move files to")
-    parser.add_argument(
-        "-r",
-        "--recursive",
-        action="store_true",
-        help="Search recursively in source folder",
-    )
-    parser.add_argument(
-        "-fl",
-        "--filterlist",
-        default=None,
-        help="Path to a txt or csv file containing a list of files to copy/move."
-        "In case of a CSV, separator and header can be provided additionally. "
-        "If no header is provided, "
-        "each line in the file is read as individual item name.",
-    )
-    parser.add_argument(
-        "-flh",
-        "--filterlistheader",
-        default=None,
-        help="Header of the column to use as filter from a csv provided as filter list."
-        " If no header is provided, "
-        "each line in the file is read as individual item name.",
-    )
-    parser.add_argument(
-        "-fls",
-        "--filterlistsep",
-        default=",",
-        help="Separator to use for csv provided as filter list. Default: ','",
-    )
-    parser.add_argument(
-        "-fs",
-        "--filterstring",
-        default=None,
-        help="Substring identifying files to be copied. not case sensitive.",
-    )
+    parser.add_argument("dir_dest", type=str, help="Folder to copy/move files to")
     parser.add_argument(
         "-se",
         "--skip_existing",
@@ -76,14 +34,11 @@ def init_parser_como(parser):
         "they will overwrite each other!",
     )
     parser.add_argument(
-        "-dr",
-        "--dryrun",
-        action="store_true",
-        help="Don't touch anything"
+        "-dr", "--dryrun", action="store_true", help="Don't touch anything"
     )
 
 
-class FileCopier(ClifsPlugin):
+class FileCopier(ClifsPlugin, FileGetterMixin):
     """
     Copy files
     """
@@ -93,21 +48,29 @@ class FileCopier(ClifsPlugin):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
+        # add args from FileGetterMixin to arg parser
+        super(FileCopier, FileCopier).init_parser_mixin(parser)
         init_parser_como(parser)
 
     def __init__(self, args):
         super().__init__(args)
-
-    def run(self):
-        como(
-            self.dir_source,
-            self.dir_dest,
-            move=False,
+        self.dir_source = Path(self.dir_source)
+        self.dir_dest = Path(self.dir_dest)
+        self.files2process = self.get_files2process(
+            dir_source=self.dir_source,
             recursive=self.recursive,
             path_filterlist=self.filterlist,
             header_filterlist=self.filterlistheader,
             sep_filterlist=self.filterlistsep,
             filterstring=self.filterstring,
+        )
+
+    def run(self):
+        como(
+            self.dir_source,
+            self.dir_dest,
+            files2process=self.files2process,
+            move=False,
             skip_existing=self.skip_existing,
             keep_all=self.keep_all,
             flatten=self.flatten,
@@ -125,21 +88,29 @@ class FileMover(ClifsPlugin):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
+        # add args from FileGetterMixin to arg parser
+        super(FileCopier, FileCopier).init_parser_mixin(parser)
         init_parser_como(parser)
 
     def __init__(self, args):
         super().__init__(args)
-
-    def run(self):
-        como(
-            self.dir_source,
-            self.dir_dest,
-            move=True,
+        self.dir_source = Path(self.dir_source)
+        self.dir_dest = Path(self.dir_dest)
+        self.files2process = self.get_files2process(
+            dir_source=self.dir_source,
             recursive=self.recursive,
             path_filterlist=self.filterlist,
             header_filterlist=self.filterlistheader,
             sep_filterlist=self.filterlistsep,
             filterstring=self.filterstring,
+        )
+
+    def run(self):
+        como(
+            self.dir_source,
+            self.dir_dest,
+            files2process=self.files2process,
+            move=True,
             skip_existing=self.skip_existing,
             keep_all=self.keep_all,
             flatten=self.flatten,
