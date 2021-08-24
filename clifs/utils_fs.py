@@ -125,10 +125,16 @@ def _list_from_csv(path_csv, header, delimiter):
 def _get_unique_path(
     path_candidate, to_avoid_addiotionally=None, to_allow_additionally=None
 ):
+    if to_avoid_addiotionally.intersection(to_allow_additionally):
+        raise ValueError(
+            "Params 'to_avoid_addiotionally' and 'to_allow_additionally' contain "
+            "common elements: "
+            f"{to_avoid_addiotionally.intersection(to_allow_additionally)}."
+        )
     if to_avoid_addiotionally is None:
-        to_avoid_addiotionally = []
+        to_avoid_addiotionally = set()
     if to_allow_additionally is None:
-        to_allow_additionally = []
+        to_allow_additionally = set()
     name_file = path_candidate.stem
 
     if (path_candidate not in to_allow_additionally) and (
@@ -276,8 +282,8 @@ def rename_files(
 def _rename_files(files2process, re_pattern, replacement, *, preview_mode=True):
     num_files2process = len(files2process)
     print(f"Renaming {num_files2process} files.")
-    files_to_be_added = []
-    files_to_be_deleted = []
+    files_to_be_added = set()
+    files_to_be_deleted = set()
     if preview_mode:
         print("Preview:")
 
@@ -308,7 +314,7 @@ def _rename_files(files2process, re_pattern, replacement, *, preview_mode=True):
         path_file_unique = _get_unique_path(
             path_file_new,
             to_avoid_addiotionally=files_to_be_added,
-            to_allow_additionally=files_to_be_deleted + [path_file],
+            to_allow_additionally=files_to_be_deleted | {path_file},
         )
 
         if not path_file_new == path_file_unique:
@@ -333,14 +339,14 @@ def _rename_files(files2process, re_pattern, replacement, *, preview_mode=True):
         _print_rename_message(
             message_rename, num_file, num_files2process, preview_mode=preview_mode
         )
-        if not preview_mode and not name_old == name_new:
+        if not preview_mode:
             path_file.rename(path_file_new)
             num_files_renamed += 1
-        elif preview_mode:
-            files_to_be_added.append(path_file_new)
+        else:
+            files_to_be_added.add(path_file_new)
             if path_file_new in files_to_be_deleted:
                 files_to_be_deleted.remove(path_file_new)
-            files_to_be_deleted.append(path_file)
+            files_to_be_deleted.add(path_file)
 
     if num_bad_results:
         print(
