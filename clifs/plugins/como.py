@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
+from typing import List
 
 from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_fs import FileGetterMixin, como
+from argparse import ArgumentParser
 
 
-def init_parser_como(parser):
+def init_parser_como(parser: ArgumentParser):
     """
     Adding arguments to an argparse parser. Needed for all clifs_plugins.
     """
-    parser.add_argument("dir_dest", type=str, help="Folder to copy/move files to")
+    parser.add_argument("dir_dest", type=Path, help="Folder to copy/move files to")
     parser.add_argument(
         "-se",
         "--skip_existing",
@@ -31,7 +33,7 @@ def init_parser_como(parser):
         help="Flatten folder structure in output directory when running "
         "in recursive mode. "
         "Be careful with files of identical name in different subfolders as "
-        "they will overwrite each other!",
+        "they will overwrite each other by default!",
     )
     parser.add_argument(
         "-dr", "--dryrun", action="store_true", help="Don't touch anything"
@@ -43,8 +45,15 @@ class FileCopier(ClifsPlugin, FileGetterMixin):
     Copy files
     """
 
+    files2process: List[Path]
+    dir_dest: Path
+    skip_existing: bool
+    keep_all: bool
+    flatten: bool
+    dryrun: bool
+
     @staticmethod
-    def init_parser(parser):
+    def init_parser(parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -54,8 +63,6 @@ class FileCopier(ClifsPlugin, FileGetterMixin):
 
     def __init__(self, args):
         super().__init__(args)
-        self.dir_source = Path(self.dir_source)
-        self.dir_dest = Path(self.dir_dest)
         self.files2process = self.get_files2process(
             dir_source=self.dir_source,
             recursive=self.recursive,
@@ -66,6 +73,7 @@ class FileCopier(ClifsPlugin, FileGetterMixin):
         )
 
     def run(self):
+        self.exit_if_nothing_to_process(self.files2process)
         como(
             self.dir_source,
             self.dir_dest,
@@ -78,13 +86,20 @@ class FileCopier(ClifsPlugin, FileGetterMixin):
         )
 
 
-class FileMover(ClifsPlugin):
+class FileMover(ClifsPlugin, FileGetterMixin):
     """
     Move files
     """
 
+    files2process: List[Path]
+    dir_dest: Path
+    skip_existing: bool
+    keep_all: bool
+    flatten: bool
+    dryrun: bool
+
     @staticmethod
-    def init_parser(parser):
+    def init_parser(parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -94,8 +109,6 @@ class FileMover(ClifsPlugin):
 
     def __init__(self, args):
         super().__init__(args)
-        self.dir_source = Path(self.dir_source)
-        self.dir_dest = Path(self.dir_dest)
         self.files2process = self.get_files2process(
             dir_source=self.dir_source,
             recursive=self.recursive,
@@ -106,6 +119,7 @@ class FileMover(ClifsPlugin):
         )
 
     def run(self):
+        self.exit_if_nothing_to_process(self.files2process)
         como(
             self.dir_source,
             self.dir_dest,

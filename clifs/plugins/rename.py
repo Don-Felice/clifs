@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
+from argparse import ArgumentParser
+import sys
 
 from clifs.clifs_plugin import ClifsPlugin
+from clifs.utils_cli import user_query
 from clifs.utils_fs import FileGetterMixin, rename_files
 
 
@@ -11,8 +13,12 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
     Regex-based file renaming.
     """
 
+    re_pattern: str
+    substitute: str
+    skip_preview: bool
+
     @staticmethod
-    def init_parser(parser):
+    def init_parser(parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -47,7 +53,6 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
 
     def __init__(self, args):
         super().__init__(args)
-        self.dir_source = Path(self.dir_source)
         self.files2process = self.get_files2process(
             dir_source=self.dir_source,
             recursive=self.recursive,
@@ -58,9 +63,24 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
         )
 
     def run(self):
+        self.exit_if_nothing_to_process(self.files2process)
+
+        if not self.skip_preview:
+            rename_files(
+                self.files2process,
+                self.re_pattern,
+                self.substitute,
+                preview_mode=True,
+            )
+            if not user_query(
+                'If you want to apply renaming, give me a "yes" or "y" now!'
+            ):
+                print("Will not rename for now. See you soon.")
+                sys.exit(0)
+
         rename_files(
             self.files2process,
             self.re_pattern,
             self.substitute,
-            skip_preview=self.skip_preview,
+            preview_mode=False,
         )

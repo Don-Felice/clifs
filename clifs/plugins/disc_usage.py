@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 
 
+from argparse import ArgumentParser
 from pathlib import Path
 import shutil
+from typing import List, Dict
+
 from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_cli import wrap_string, ANSI_COLORS, size2str, cli_bar
-
-
-from colorama import init
-
-init()  # allow for ansi escape sequences to have colorful cmd output
 
 
 class DiscUsageExplorer(ClifsPlugin):
@@ -17,8 +15,11 @@ class DiscUsageExplorer(ClifsPlugin):
     Display a tree of the file system including item sizes.
     """
 
+    dirs: List[str]
+    _dict_usage: dict
+
     @staticmethod
-    def init_parser(parser):
+    def init_parser(parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -38,7 +39,7 @@ class DiscUsageExplorer(ClifsPlugin):
         self._print_usage_info()
         pass
 
-    def _get_usage_info(self):
+    def _get_usage_info(self) -> Dict[str, Dict[str, int]]:
         disc_usage = {}
         for directory in self.dirs:
             dict_usage = {}

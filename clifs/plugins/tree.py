@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from argparse import ArgumentParser
+from pathlib import Path
 
-import pathlib
 from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_cli import wrap_string, ANSI_COLORS, size2str
 
-from colorama import init
-
-init()  # allow for ansi escape sequences to have colorful cmd output
 
 PIPE = "│"
 ELBOW = "└──"
@@ -21,14 +19,18 @@ class DirectoryTree(ClifsPlugin):
     Display a tree of the file system including item sizes.
     """
 
+    root_dir: Path
+    dirs_only: bool
+    hide_sizes: bool
+
     @staticmethod
-    def init_parser(parser):
+    def init_parser(parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
         parser.add_argument(
             "root_dir",
-            type=str,
+            type=Path,
             default=".",
             nargs="?",
             help="Root directory to generate tree",
@@ -50,7 +52,6 @@ class DirectoryTree(ClifsPlugin):
 
     def __init__(self, args):
         super().__init__(args)
-        self.root_dir = pathlib.Path(self.root_dir)
         self._tree = []
 
     def run(self):
@@ -66,7 +67,7 @@ class DirectoryTree(ClifsPlugin):
         prefix="",
         connector="",
         ansiescape_color=ANSI_COLORS["yellow"],
-    ):
+    ) -> int:
         idx_dir = len(
             self._tree
         )  # get index of current directory in tree list to attach size info
@@ -120,11 +121,11 @@ class DirectoryTree(ClifsPlugin):
             )
         return size
 
-    def _add_file(self, file, prefix, connector):
+    def _add_file(self, file, prefix, connector) -> int:
         try:
             size = file.stat().st_size if not self.hide_sizes else 0
         except FileNotFoundError:
-            file_long = pathlib.Path(
+            file_long = Path(
                 "\\\\?\\" + str(file)
             )  # handle long paths in windows systems
             size = file_long.stat().st_size if not self.hide_sizes else 0

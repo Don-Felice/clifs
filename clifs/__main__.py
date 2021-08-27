@@ -2,13 +2,17 @@
 
 
 import argparse
-from pkg_resources import iter_entry_points
+import colorama  # type: ignore
+from pkg_resources import iter_entry_points  # type: ignore
 import sys
 
 
 def main():
+    colorama.init()  # allow for ansi escape sequences to have colorful cmd output
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
     commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
     plugins = {}

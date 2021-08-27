@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 
-# external imports
 from abc import ABC, abstractmethod
+from argparse import ArgumentParser, Namespace
 
 
 class ClifsPlugin(ABC):
@@ -12,14 +12,14 @@ class ClifsPlugin(ABC):
 
     @staticmethod
     @abstractmethod
-    def init_parser(parser):
+    def init_parser(parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs plugins.
         """
         raise NotImplementedError()
 
     @abstractmethod
-    def __init__(self, args):
+    def __init__(self, args: Namespace):
         """
         Converts arguments to instance attributes.
         """

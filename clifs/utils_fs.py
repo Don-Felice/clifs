@@ -1,23 +1,36 @@
 # -*- coding: utf-8 -*-
 
+from argparse import ArgumentParser
 import csv
 from pathlib import Path
 import re
 import shutil
 import sys
+from typing import List, Set, Union, Optional
 
 
-from clifs.utils_cli import wrap_string, cli_bar, user_query, ANSI_COLORS
+from clifs.utils_cli import wrap_string, cli_bar, ANSI_COLORS, print_line
 
 
 class FileGetterMixin:
+    """
+    Get files from a source directory by different filter methods.
+    """
+
+    dir_source: Union[str, Path]
+    recursive: bool
+    filterlist: Path
+    filterlistheader: str
+    filterlistsep: str
+    filterstring: str
+
     @staticmethod
-    def init_parser_mixin(parser):
+    def init_parser_mixin(parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
         parser.add_argument(
-            "dir_source", type=str, help="Folder with files to copy/move from"
+            "dir_source", type=Path, help="Folder with files to copy/move from"
         )
         parser.add_argument(
             "-r",
@@ -29,6 +42,7 @@ class FileGetterMixin:
             "-fl",
             "--filterlist",
             default=None,
+            type=Path,
             help="Path to a txt or csv file containing a list of files to copy/move."
             "In case of a CSV, separator and header can be provided additionally. "
             "If no header is provided, "
@@ -58,52 +72,62 @@ class FileGetterMixin:
 
     def get_files2process(
         self,
-        dir_source,
-        recursive=False,
-        path_filterlist=None,
-        header_filterlist=None,
-        sep_filterlist=None,
-        filterstring=None,
-    ):
+        dir_source: Path,
+        recursive: bool = False,
+        path_filterlist: Optional[Path] = None,
+        header_filterlist: Optional[str] = None,
+        sep_filterlist: str = ",",
+        filterstring: Optional[str] = None,
+    ) -> List[Path]:
         files2process = self._get_files_by_filterstring(
             dir_source, filterstring=filterstring, recursive=recursive
         )
 
         if path_filterlist:
-            path_filterlist = Path(path_filterlist)
             list_filter = _list_from_csv(
                 path_filterlist, header_filterlist, sep_filterlist
             )
             files2process = self._filter_by_list(files2process, list_filter)
-
         return files2process
 
     @staticmethod
-    def _get_files_by_filterstring(dir_source, filterstring=None, recursive=False):
+    def exit_if_nothing_to_process(files2process: list):
+        if not files2process:
+            print("Nothing to process.")
+            sys.exit(0)
+
+    @staticmethod
+    def _get_files_by_filterstring(
+        dir_source: Path, filterstring: Optional[str] = None, recursive: bool = False
+    ) -> List[Path]:
         pattern_search = "*" + filterstring + "*" if filterstring else "*"
         if recursive:
             pattern_search = "**/" + pattern_search
         return [file for file in dir_source.glob(pattern_search) if not file.is_dir()]
 
     @staticmethod
-    def _filter_by_list(files, list_filter):
+    def _filter_by_list(files: List[Path], list_filter: List[str]) -> List[Path]:
         return [i for i in files if i.name in list_filter]
 
 
-def _find_bad_char(string):
+def _find_bad_char(string: str) -> List[str]:
     """Check stings for characters causing problems in windows file system."""
     bad_chars = r"~“#%&*:<>?/\{|}"
     return [x for x in bad_chars if x in string]
 
 
-def _get_path_dest(path_src, path_file, path_out, flatten=False):
+def _get_path_dest(
+    path_src: Path, path_file: Path, path_out: Path, flatten: bool = False
+) -> Path:
     if flatten:
         return path_out / path_file.name
     else:
         return Path(str(path_file).replace(str(path_src), str(path_out)))
 
 
-def _list_from_csv(path_csv, header, delimiter):
+def _list_from_csv(
+    path_csv: Path, header: Optional[str] = None, delimiter: str = ","
+) -> List[str]:
     if not header:
         res_list = path_csv.open().read().splitlines()
     else:
@@ -123,22 +147,25 @@ def _list_from_csv(path_csv, header, delimiter):
 
 
 def _get_unique_path(
-    path_candidate, to_avoid_addiotionally=None, to_allow_additionally=None
-):
-    if to_avoid_addiotionally.intersection(to_allow_additionally):
+    path_candidate: Path,
+    to_avoid_additionally: Set[Path] = None,
+    to_allow_additionally: Set[Path] = None,
+) -> Path:
+    if to_avoid_additionally is None:
+        to_avoid_additionally = set()
+    if to_allow_additionally is None:
+        to_allow_additionally = set()
+
+    if to_avoid_additionally.intersection(to_allow_additionally):
         raise ValueError(
             "Params 'to_avoid_addiotionally' and 'to_allow_additionally' contain "
             "common elements: "
-            f"{to_avoid_addiotionally.intersection(to_allow_additionally)}."
+            f"{to_avoid_additionally.intersection(to_allow_additionally)}."
         )
-    if to_avoid_addiotionally is None:
-        to_avoid_addiotionally = set()
-    if to_allow_additionally is None:
-        to_allow_additionally = set()
     name_file = path_candidate.stem
 
     if (path_candidate not in to_allow_additionally) and (
-        path_candidate.exists() or path_candidate in to_avoid_addiotionally
+        path_candidate.exists() or path_candidate in to_avoid_additionally
     ):
         count_match = re.match(r".* \((\d+)\)$", name_file)
         if count_match:
@@ -147,13 +174,17 @@ def _get_unique_path(
         else:
             name_file_new = name_file + " (2)"
         path_new = path_candidate.parent / (name_file_new + path_candidate.suffix)
-        return _get_unique_path(path_new, to_avoid_addiotionally, to_allow_additionally)
+        return _get_unique_path(path_new, to_avoid_additionally, to_allow_additionally)
     else:
         return path_candidate
 
 
 def _print_rename_message(
-    message, num_file, num_files_all, preview_mode=False, space_prefix="    "
+    message: str,
+    num_file: int,
+    num_files_all: int,
+    preview_mode: bool = False,
+    space_prefix: str = "    ",
 ):
     if preview_mode:
         print(space_prefix + message)
@@ -162,15 +193,15 @@ def _print_rename_message(
 
 
 def como(
-    dir_source,
-    dir_dest,
+    dir_source: Path,
+    dir_dest: Path,
     *,
-    files2process,
-    move=False,
-    skip_existing=False,
-    keep_all=False,
-    flatten=False,
-    dry_run=False,
+    files2process: List[Path],
+    move: bool = False,
+    skip_existing: bool = False,
+    keep_all: bool = False,
+    flatten: bool = False,
+    dry_run: bool = False,
 ):
     assert not (skip_existing and keep_all), (
         "You can only choose to either skip existing files "
@@ -189,107 +220,77 @@ def como(
         f"\nto"
         f"\n{dir_dest}"
     )
-    print("-----------------------------------------------------")
+    print_line()
 
-    if files2process:
-        num_files2process = len(files2process)
-        for num_file, file in enumerate(files2process, 1):
-            txt_report = f"Last: {file.name}"
-            filepath_dest = _get_path_dest(dir_source, file, dir_dest, flatten=flatten)
-            if skip_existing:
-                if filepath_dest.exists():
-                    txt_report = wrap_string(
-                        f"Skipped as already present: " f"{file.name}",
-                        ANSI_COLORS["yellow"],
-                    )
-                    cli_bar(
-                        num_file,
-                        num_files2process,
-                        suffix="of files processed. " + txt_report,
-                    )
-                    continue
-            elif keep_all:
-                filepath_dest_new = _get_unique_path(filepath_dest)
-                if not filepath_dest_new == filepath_dest:
-                    txt_report = wrap_string(
-                        f"Changed name as already present: "
-                        f"{filepath_dest.name} -> {filepath_dest_new.name}",
-                        ANSI_COLORS["yellow"],
-                    )
-                    filepath_dest = filepath_dest_new
+    num_file = 0
+    num_files2process = len(files2process)
+    for num_file, file in enumerate(files2process, 1):
+        txt_report = f"Last: {file.name}"
+        filepath_dest = _get_path_dest(dir_source, file, dir_dest, flatten=flatten)
+        if skip_existing:
+            if filepath_dest.exists():
+                txt_report = wrap_string(
+                    f"Skipped as already present: " f"{file.name}",
+                    ANSI_COLORS["yellow"],
+                )
+                cli_bar(
+                    num_file,
+                    num_files2process,
+                    suffix="of files processed. " + txt_report,
+                )
+                continue
+        elif keep_all:
+            filepath_dest_new = _get_unique_path(filepath_dest)
+            if not filepath_dest_new == filepath_dest:
+                txt_report = wrap_string(
+                    f"Changed name as already present: "
+                    f"{filepath_dest.name} -> {filepath_dest_new.name}",
+                    ANSI_COLORS["yellow"],
+                )
+                filepath_dest = filepath_dest_new
+        else:
+            if filepath_dest.exists():
+                txt_report = wrap_string(
+                    f"Replacing existing version for: " f"{file.name}",
+                    ANSI_COLORS["yellow"],
+                )
+
+        if not dry_run:
+            if not flatten:
+                filepath_dest.parent.mkdir(exist_ok=True, parents=True)
+            if move:
+                shutil.move(str(file), str(filepath_dest))
             else:
-                if filepath_dest.exists():
-                    txt_report = wrap_string(
-                        f"Replacing existing version for: " f"{file.name}",
-                        ANSI_COLORS["yellow"],
-                    )
-
-            if not dry_run:
-                if not flatten:
-                    filepath_dest.parent.mkdir(exist_ok=True, parents=True)
-                if move:
-                    shutil.move(str(file), str(filepath_dest))
-                else:
-                    shutil.copy2(str(file), str(filepath_dest))
-            cli_bar(
-                num_file,
-                num_files2process,
-                suffix="of files processed. " + txt_report,
-            )
-
-        str_process = "moved" if move else "copied"
-        print(f"Hurray, {num_file} files have been {str_process}.")
-    else:
-        print("No files to process.")
+                shutil.copy2(str(file), str(filepath_dest))
+        cli_bar(
+            num_file,
+            num_files2process,
+            suffix="of files processed. " + txt_report,
+        )
+    print_line()
+    str_process = "moved" if move else "copied"
+    print(f"Hurray, {num_file} files have been {str_process}.")
 
 
 def rename_files(
-    files2process,
-    re_pattern,
-    replacement,
+    files2process: List[Path],
+    re_pattern: str,
+    replacement: str,
     *,
-    skip_preview=False,
+    preview_mode: bool = True,
 ):
-
-    if files2process:
-        if not skip_preview:
-            _rename_files(
-                files2process,
-                re_pattern,
-                replacement,
-                preview_mode=True,
-            )
-            if not user_query(
-                'If you want to apply renaming, give me a "yes" or "y" now!'
-            ):
-                print("Will not rename for now. See you soon.")
-                sys.exit(0)
-
-        num_files_proc, num_files_ren = _rename_files(
-            files2process,
-            re_pattern,
-            replacement,
-            preview_mode=False,
-        )
-        print(
-            f"Hurray, {num_files_proc} files have been processed, "
-            f"{num_files_ren} have been renamed."
-        )
-    else:
-        print("No files to process.")
-
-
-def _rename_files(files2process, re_pattern, replacement, *, preview_mode=True):
     num_files2process = len(files2process)
     print(f"Renaming {num_files2process} files.")
-    files_to_be_added = set()
-    files_to_be_deleted = set()
+    print_line()
+    files_to_be_added: Set[Path] = set()
+    files_to_be_deleted: Set[Path] = set()
     if preview_mode:
         print("Preview:")
 
     num_bad_results = 0
     num_name_conflicts = 0
     num_files_renamed = 0
+    num_file = 0
     for num_file, path_file in enumerate(files2process, 1):
         name_old = path_file.name
         name_new = re.sub(re_pattern, replacement, name_old)
@@ -313,7 +314,7 @@ def _rename_files(files2process, re_pattern, replacement, *, preview_mode=True):
         path_file_new = path_file.parent / name_new
         path_file_unique = _get_unique_path(
             path_file_new,
-            to_avoid_addiotionally=files_to_be_added,
+            to_avoid_additionally=files_to_be_added,
             to_allow_additionally=files_to_be_deleted | {path_file},
         )
 
@@ -363,11 +364,20 @@ def _rename_files(files2process, re_pattern, replacement, *, preview_mode=True):
                 f"Added numbering suffices to get unique names."
             )
         )
-    return num_file, num_files_renamed
+    print_line()
+    if not preview_mode:
+        print(
+            f"Hurray, {num_file} files have been processed, "
+            f"{num_files_renamed} have been renamed."
+        )
 
 
-def delete_files(files2process, dry_run=False):
+def delete_files(files2process: List[Path], dry_run: bool = False):
     num_files2process = len(files2process)
+    print(f"Deleting {num_files2process} files.")
+    print_line()
+
+    num_file = 0
     for num_file, path_file in enumerate(files2process, 1):
         if dry_run:
             print(f"would delete: {path_file.name}")
@@ -378,3 +388,6 @@ def delete_files(files2process, dry_run=False):
                 num_files2process,
                 suffix=f"of files deleted. Last: {path_file.name}",
             )
+    print_line()
+    if not dry_run:
+        print(f"Hurray, {num_file} files have been deleted.")
