@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+from typing import Optional, Union
 
 ANSI_COLORS = {
     "yellow": "\033[0;93m",
@@ -21,7 +21,9 @@ def wrap_string(
     return prefix + string + suffix
 
 
-def size2str(size: float, ansiescape_color: str = ANSI_COLORS["cyan"]) -> str:
+def size2str(
+    size: Union[int, float], ansiescape_color: str = ANSI_COLORS["cyan"]
+) -> str:
     if size >= (1024 ** 5):
         unit = "PB"
         size = round(size / (1024 ** 5), 2)
