@@ -1,0 +1,12 @@
+dir_source_2    0.01 MB
+├── L1_file_1.txt    0.00 MB
+├── L1_file_2.txt    0.00 MB
+├── L1_file_3.txt    0.00 MB
+├──subdir_1    0.01 MB
+│   ├── L2_file_1.txt    0.00 MB
+│   └──subsubdir_1    0.01 MB
+│       ├── L3_file_1.txt    0.00 MB
+│       ├── L3_file_2.txt    0.01 MB
+│       └── L3_file_3.txt    0.00 MB
+└──subdir_2    0.00 MB
+    └── L2_file_2.txt    0.00 MB

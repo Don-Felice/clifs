@@ -5,7 +5,7 @@ setup(
     name="clifs",
     version="0.1.0",
     author="Felix Segerer",
-    packages=["clifs", "clifs.plugins"],
+    packages=["clifs", "clifs.plugins", "clifs.plugins.backup"],
     license="LICENSE",
     description="Command line interface for basic file system operations.",
     entry_points={
@@ -19,6 +19,7 @@ setup(
             "move = clifs.plugins.como:FileMover",
             "del = clifs.plugins.delete:FileDeleter",
             "ren = clifs.plugins.rename:FileRenamer",
+            "backup = clifs.plugins.backup.backup:FileSaver"
         ],
     },
 )
