@@ -3,14 +3,19 @@
 # test folder backup
 
 from argparse import Namespace
-import os
 from pathlib import Path
 import shutil
+from functools import partial
 
 
 import pytest
 
-from clifs.plugins.backup import FileSaver
+from clifs.plugins.backup.backup import FileSaver
+from tests.common.utils_testing import (
+    compare_files,
+    parametrize_default_ids,
+    substr_in_dir_names,
+)
 
 
 def create_test_cfg(path_cfg, path_output):
@@ -28,41 +33,10 @@ def create_test_cfg(path_cfg, path_output):
     return path_output
 
 
-def check_mtime_consistency(file1, file2):
-    assert (
-        abs(os.path.getmtime(file1) - os.path.getmtime(file2)) <= 1
-    ), f"File modification time is not consistent for file {file1}"
-
-
-def compare_files(dir_source, dir_ref):
-    print("---------------------")
-    print(
-        f"checking consistencies of folders:"
-        f"\n{str(dir_source)}\nand\n{str(dir_ref)}."
-    )
-    list_files_source = [x for x in dir_source.rglob("*") if not x.is_dir()]
-    for cur_file_source in list_files_source:
-        cur_file_dest = Path(
-            str(cur_file_source).replace(str(dir_source), str(dir_ref))
-        )
-        print(f"checking file: {cur_file_source}")
-        # check for existence
-        assert (
-            cur_file_dest.exists()
-        ), f"file {cur_file_source.name} from {dir_source} not existent in {dir_ref}."
-        # check for proper updating
-        check_mtime_consistency(cur_file_source, cur_file_dest)
-    print("---------------------")
-
-
-def contains_delme(directory):
-    return any(["DELME" in str(x) for x in directory.rglob("*")])
-
-
 @pytest.fixture(scope="function")
 def dir_testrun(tmp_path: Path):
     # create source dest structure for update test
-    shutil.copytree(Path(__file__).parent / "data", tmp_path / "data")
+    shutil.copytree(Path(__file__).parents[1] / "common" / "data", tmp_path / "data")
 
     # update some files to change mtime
     path_updateme = (
@@ -128,9 +102,9 @@ def cfg_testrun(dir_testrun):
     return path_cfg_test
 
 
-@pytest.mark.parametrize("from_cfg", [(False), (True)])
-@pytest.mark.parametrize("delete", [(False), (True)])
-@pytest.mark.parametrize("dry_run", [(False), (True)])
+@parametrize_default_ids("from_cfg", [False, True])
+@parametrize_default_ids("delete", [False, True])
+@parametrize_default_ids("dry_run", [False, True])
 def test_backup(cfg_testrun, dir_pairs, from_cfg, delete, dry_run):
     # run the actual function to test
     if from_cfg:
@@ -163,19 +137,18 @@ def test_backup(cfg_testrun, dir_pairs, from_cfg, delete, dry_run):
         for dir_pair in dir_pairs["source_dest"]:
             compare_files(*dir_pair)
             if delete:
-                assert not contains_delme(
+                assert not substr_in_dir_names(
                     dir_pair[1]
                 ), "Files only present in destination dir have not been deleted."
             else:
-                assert contains_delme(
+                assert substr_in_dir_names(
                     dir_pair[1]
                 ), "Files only present in destination dir have been deleted."
+    else:
+        # check for dest dir integrity
+        for dir_pair in dir_pairs["dest_ref"]:
+            compare_files(*dir_pair)
 
     # check for source dir integrity
     for dir_pair in dir_pairs["source_ref"]:
         compare_files(*dir_pair)
-
-    if dry_run:
-        # check for dest dir integrity
-        for dir_pair in dir_pairs["dest_ref"]:
-            compare_files(*dir_pair)
