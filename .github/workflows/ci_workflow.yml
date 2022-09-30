@@ -31,7 +31,6 @@ jobs:
       - name: Mypy
         run: mypy clifs/
 
-# TODO: implement tests
-#      - name: Test
-#        run: |
-#          pytest --cov-report term-missing --cov=backmeup tests/
+      - name: Test
+        run: |
+          pytest --cov-report term-missing --cov=clifs tests/
