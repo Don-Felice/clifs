@@ -1,9 +1,13 @@
 from setuptools import setup
+from pathlib import Path
 
+
+with (Path(__file__).parent / "VERSION").open("r") as version_file:
+    version = version_file.read().strip()
 
 setup(
     name="clifs",
-    version="0.1.0",
+    version=version,
     author="Felix Segerer",
     packages=["clifs", "clifs.plugins", "clifs.plugins.backup"],
     license="LICENSE",
