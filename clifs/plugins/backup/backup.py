@@ -101,7 +101,10 @@ class FileSaver(ClifsPlugin):
             "--delete",
             action="store_true",
             default=False,
-            help="delete files which exist in destination directory but not in the source directory",
+            help=(
+                "delete files which exist in destination directory but not in"
+                "the source directory"
+            ),
         )
         parser.add_argument(
             "-dr",

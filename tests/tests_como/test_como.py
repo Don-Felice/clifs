@@ -1,107 +1,13 @@
 # -*- coding: utf-8 -*-
 
 
-from argparse import Namespace
-from functools import partial
-from pathlib import Path
-import shutil
+from unittest.mock import patch
 
-
-import pytest
-
-from clifs.plugins.como import FileCopier, FileMover
-from tests.common.utils_testing import compare_files, parametrize_default_ids
-
-
-def contains_delme(directory):
-    return any(["DELME" in str(x) for x in directory.rglob("*")])
-
-
-@pytest.fixture(scope="function")
-def dir_testrun(tmp_path: Path):
-    # create source dest structure for update test
-    shutil.copytree(Path(__file__).parents[1] / "common" / "data", tmp_path / "data")
-
-    # update some files to change mtime
-    path_updateme = (
-        tmp_path
-        / "data"
-        / "dir_source_1"
-        / "subdir_1"
-        / "subsubdir_1"
-        / "L3_file_1.txt"
-    )
-    with path_updateme.open("a") as filetoupdate:
-        filetoupdate.write("I have been updated.")
-
-    # create source reference to check source dir integrity
-    shutil.copytree(
-        tmp_path / "data" / "dir_source_1", tmp_path / "data" / "dir_source_1_ref"
-    )
-    shutil.copytree(
-        tmp_path / "data" / "dir_source_2", tmp_path / "data" / "dir_source_2_ref"
-    )
-
-    # create dest reference for check dest dir integrity after dry run
-    shutil.copytree(
-        tmp_path / "data" / "dir_dest_1", tmp_path / "data" / "dir_dest_1_ref"
-    )
-    shutil.copytree(
-        tmp_path / "data" / "dir_dest_2", tmp_path / "data" / "dir_dest_2_ref"
-    )
-
-    # create empty dest folders for flattening
-    (tmp_path / "data" / "dir_dest_empty_1").mkdir()
-    (tmp_path / "data" / "dir_dest_empty_2").mkdir()
-    return tmp_path
-
-
-@pytest.fixture(scope="function")
-def dir_pairs(dir_testrun, num_dirs=2):
-    dir_pairs = {}
-    dir_pairs["source_dest"] = [
-        (
-            dir_testrun / "data" / ("dir_source_" + str(i)),
-            dir_testrun / "data" / ("dir_dest_" + str(i)),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    dir_pairs["source_ref"] = [
-        (
-            dir_testrun / "data" / ("dir_source_" + str(i)),
-            dir_testrun / "data" / ("dir_source_" + str(i) + "_ref"),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    dir_pairs["dest_ref"] = [
-        (
-            dir_testrun / "data" / ("dir_dest_" + str(i)),
-            dir_testrun / "data" / ("dir_dest_" + str(i) + "_ref"),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    dir_pairs["emptydest_refsourceflat"] = [
-        (
-            dir_testrun / "data" / ("dir_dest_empty_" + str(i)),
-            dir_testrun / "data" / ("ref_flatten_dir_source_" + str(i)),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    dir_pairs["source_refkeepsource2dest"] = [
-        (
-            dir_testrun / "data" / ("dir_source_" + str(i)),
-            dir_testrun / "data" / ("ref_keep_dir_source2dest_" + str(i)),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    dir_pairs["source_emptydest"] = [
-        (
-            dir_testrun / "data" / ("dir_source_" + str(i)),
-            dir_testrun / "data" / ("dir_dest_empty_" + str(i)),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    return dir_pairs
+from clifs.__main__ import main
+from tests.common.utils_testing import (
+    assert_files_present,
+    parametrize_default_ids,
+)
 
 
 @parametrize_default_ids(
@@ -109,48 +15,85 @@ def dir_pairs(dir_testrun, num_dirs=2):
 )
 @parametrize_default_ids("dryrun", [False, True])
 @parametrize_default_ids("flatten", [False, True])
-def test_copy(dir_pairs, dryrun, skip_existing, keep_all, flatten):
+def test_copy(
+    dirs_source,
+    dirs_dest,
+    dirs_source_ref,
+    dirs_dest_ref,
+    dirs_empty,
+    dirs_flatten_dir_source_ref,
+    dirs_keep_dir_source2dest_ref,
+    dryrun,
+    skip_existing,
+    keep_all,
+    flatten,
+):
+    n_test_dirs = len(dirs_source)
     # run the actual function to test
-    test_pair = "source_emptydest" if flatten else "source_dest"
+    for idx_dir in range(n_test_dirs):
 
-    for dir_pair in dir_pairs[test_pair]:
-        copier = FileCopier(
-            Namespace(
-                dir_source=dir_pair[0],
-                dir_dest=dir_pair[1],
-                recursive=True,
-                filterlist=None,
-                filterlistheader=None,
-                filterlistsep=None,
-                filterstring=None,
-                skip_existing=skip_existing,
-                keep_all=False,
-                flatten=flatten,
-                dryrun=dryrun,
-            )
-        )
-        copier.run()
+        patch_args = [
+            "clifs",
+            "copy",
+            str(dirs_source[idx_dir]),
+            str(dirs_empty[idx_dir] if flatten else dirs_dest[idx_dir]),
+            "--recursive",
+        ]
+
+        if skip_existing:
+            patch_args.append("--skip_existing")
+        if keep_all:
+            patch_args.append("--keep_all")
+        if flatten:
+            patch_args.append("--flatten")
+        if dryrun:
+            patch_args.append("--dryrun")
+
+        with patch("sys.argv", patch_args):
+            main()
     print("Copy went through.")
 
     if not dryrun:
         # check for proper updating and deleting
         if flatten:
-            for dir_pair in dir_pairs["emptydest_refsourceflat"]:
-                compare_files(*dir_pair, check_mtime=False)
+            for idx_dir in range(n_test_dirs):
+                assert_files_present(
+                    dirs_empty[idx_dir],
+                    dirs_flatten_dir_source_ref[idx_dir],
+                    check_mtime=False,
+                )
+                assert_files_present(
+                    dirs_flatten_dir_source_ref[idx_dir],
+                    dirs_empty[idx_dir],
+                    check_mtime=False,
+                )
         elif keep_all:
-            for dir_pair in dir_pairs["source_refkeepsource2dest"]:
-                compare_files(*dir_pair, check_mtime=False)
+            for idx_dir in range(n_test_dirs):
+                assert_files_present(
+                    dirs_keep_dir_source2dest_ref[idx_dir],
+                    dirs_dest[idx_dir],
+                    check_mtime=False,
+                )
+                assert_files_present(
+                    dirs_dest[idx_dir],
+                    dirs_keep_dir_source2dest_ref[idx_dir],
+                    check_mtime=False,
+                )
         else:
-            for dir_pair in dir_pairs["source_dest"]:
-                compare_files(*dir_pair, check_mtime=not skip_existing)
+            for idx_dir in range(n_test_dirs):
+                assert_files_present(
+                    dirs_source[idx_dir],
+                    dirs_dest[idx_dir],
+                    check_mtime=not skip_existing,
+                )
     else:
         # check for dest dir integrity
-        for dir_pair in dir_pairs["dest_ref"]:
-            compare_files(*dir_pair)
+        for idx_dir in range(n_test_dirs):
+            assert_files_present(dirs_dest[idx_dir], dirs_dest_ref[idx_dir])
 
     # check for source dir integrity
-    for dir_pair in dir_pairs["source_ref"]:
-        compare_files(*dir_pair)
+    for idx_dir in range(n_test_dirs):
+        assert_files_present(dirs_source[idx_dir], dirs_source_ref[idx_dir])
 
 
 @parametrize_default_ids(
@@ -158,45 +101,82 @@ def test_copy(dir_pairs, dryrun, skip_existing, keep_all, flatten):
 )
 @parametrize_default_ids("dryrun", [False, True])
 @parametrize_default_ids("flatten", [False, True])
-def test_move(dir_pairs, dryrun, skip_existing, keep_all, flatten):
+def test_move(
+    dirs_source,
+    dirs_dest,
+    dirs_source_ref,
+    dirs_dest_ref,
+    dirs_empty,
+    dirs_flatten_dir_source_ref,
+    dirs_keep_dir_source2dest_ref,
+    dryrun,
+    skip_existing,
+    keep_all,
+    flatten,
+):
     # run the actual function to test
-    test_pair = "source_emptydest" if flatten else "source_dest"
+    n_test_dirs = len(dirs_source)
+    # run the actual function to test
+    for idx_dir in range(n_test_dirs):
+        patch_args = [
+            "clifs",
+            "move",
+            str(dirs_source[idx_dir]),
+            str(dirs_empty[idx_dir] if flatten else dirs_dest[idx_dir]),
+            "--recursive",
+        ]
 
-    for dir_pair in dir_pairs[test_pair]:
-        mover = FileMover(
-            Namespace(
-                dir_source=dir_pair[0],
-                dir_dest=dir_pair[1],
-                recursive=True,
-                filterlist=None,
-                filterlistheader=None,
-                filterlistsep=None,
-                filterstring=None,
-                skip_existing=skip_existing,
-                keep_all=False,
-                flatten=flatten,
-                dryrun=dryrun,
-            )
-        )
-        mover.run()
+        if skip_existing:
+            patch_args.append("--skip_existing")
+        if keep_all:
+            patch_args.append("--keep_all")
+        if flatten:
+            patch_args.append("--flatten")
+        if dryrun:
+            patch_args.append("--dryrun")
+
+        with patch("sys.argv", patch_args):
+            main()
     print("Copy went through.")
 
     if not dryrun:
         # check for proper updating and deleting
         if flatten:
-            for dir_pair in dir_pairs["emptydest_refsourceflat"]:
-                compare_files(*dir_pair, check_mtime=False)
+            for idx_dir in range(n_test_dirs):
+                assert_files_present(
+                    dirs_empty[idx_dir],
+                    dirs_flatten_dir_source_ref[idx_dir],
+                    check_mtime=False,
+                )
+                assert_files_present(
+                    dirs_flatten_dir_source_ref[idx_dir],
+                    dirs_empty[idx_dir],
+                    check_mtime=False,
+                )
         elif keep_all:
-            for dir_pair in dir_pairs["source_refkeepsource2dest"]:
-                compare_files(*dir_pair, check_mtime=False)
+            for idx_dir in range(n_test_dirs):
+                assert_files_present(
+                    dirs_keep_dir_source2dest_ref[idx_dir],
+                    dirs_dest[idx_dir],
+                    check_mtime=False,
+                )
+                assert_files_present(
+                    dirs_dest[idx_dir],
+                    dirs_keep_dir_source2dest_ref[idx_dir],
+                    check_mtime=False,
+                )
         else:
-            for dir_pair in dir_pairs["source_dest"]:
-                compare_files(*dir_pair, check_mtime=not skip_existing)
+            for idx_dir in range(n_test_dirs):
+                assert_files_present(
+                    dirs_source[idx_dir],
+                    dirs_dest[idx_dir],
+                    check_mtime=not skip_existing,
+                )
     else:
         # check for dest dir integrity
-        for dir_pair in dir_pairs["dest_ref"]:
-            compare_files(*dir_pair)
+        for idx_dir in range(n_test_dirs):
+            assert_files_present(dirs_dest[idx_dir], dirs_dest_ref[idx_dir])
 
         # check for source dir integrity
-        for dir_pair in dir_pairs["source_ref"]:
-            compare_files(*dir_pair)
+        for idx_dir in range(n_test_dirs):
+            assert_files_present(dirs_source[idx_dir], dirs_source_ref[idx_dir])

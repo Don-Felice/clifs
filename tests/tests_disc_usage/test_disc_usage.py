@@ -2,32 +2,27 @@
 
 
 from argparse import Namespace
-from math import isclose
-from pathlib import Path
 import re
+from unittest.mock import patch
 
-
-from pytest_mock import mocker
-
+from clifs.__main__ import main
 from clifs.plugins.disc_usage import DiscUsageExplorer
 from tests.common.utils_testing import (
     parametrize_default_ids,
-    dirs_empty,
-    dir_testrun,
     escape_ansi,
 )
 
 
 @parametrize_default_ids("usage_info", [(1000, 400, 600), (100000, 70000, 30000)])
-def test_delete(dirs_empty, usage_info, mocker, capfd):
-    mocker.patch("shutil.disk_usage", return_value=(usage_info))
-
+def test_delete_numbers(dirs_empty, usage_info):
     # run the actual function to test
-    usage_explorer = DiscUsageExplorer(
-        Namespace(
-            dirs=[str(x) for x in dirs_empty],
+    with patch("shutil.disk_usage", return_value=(usage_info)):
+
+        usage_explorer = DiscUsageExplorer(
+            Namespace(
+                dirs=[str(x) for x in dirs_empty],
+            )
         )
-    )
 
     for idx_dir, dir in enumerate(dirs_empty, 1):
 
@@ -45,8 +40,16 @@ def test_delete(dirs_empty, usage_info, mocker, capfd):
             space_free == usage_info[2]
         ), f"Total disc space does not match: exp={usage_info[2]}, act={space_free}"
 
-    # test stdout
-    usage_explorer._print_usage_info()
+
+@parametrize_default_ids("usage_info", [(1000, 400, 600), (100000, 70000, 30000)])
+def test_delete_in_out(dirs_empty, usage_info, capfd):
+
+    # run the actual function to test
+    with patch("sys.argv", ["clifs", "du"] + [str(x) for x in dirs_empty]), patch(
+        "shutil.disk_usage", return_value=(usage_info)
+    ):
+        main()
+
     captured = capfd.readouterr()
     for sp_type, sp_val in zip(["total", "used", "free"], usage_info):
         assert len(

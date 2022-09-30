@@ -19,7 +19,7 @@ setup(
             "move = clifs.plugins.como:FileMover",
             "del = clifs.plugins.delete:FileDeleter",
             "ren = clifs.plugins.rename:FileRenamer",
-            "backup = clifs.plugins.backup.backup:FileSaver"
+            "backup = clifs.plugins.backup.backup:FileSaver",
         ],
     },
 )

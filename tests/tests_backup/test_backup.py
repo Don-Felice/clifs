@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 
-# test folder backup
 
-from argparse import Namespace
 from pathlib import Path
-import shutil
-from functools import partial
-
-
+from unittest.mock import patch
 import pytest
 
-from clifs.plugins.backup.backup import FileSaver
+from clifs.__main__ import main
 from tests.common.utils_testing import (
-    compare_files,
+    assert_files_present,
     parametrize_default_ids,
     substr_in_dir_names,
 )
@@ -34,68 +29,6 @@ def create_test_cfg(path_cfg, path_output):
 
 
 @pytest.fixture(scope="function")
-def dir_testrun(tmp_path: Path):
-    # create source dest structure for update test
-    shutil.copytree(Path(__file__).parents[1] / "common" / "data", tmp_path / "data")
-
-    # update some files to change mtime
-    path_updateme = (
-        tmp_path
-        / "data"
-        / "dir_source_1"
-        / "subdir_1"
-        / "subsubdir_1"
-        / "L3_file_1.txt"
-    )
-    with path_updateme.open("a") as filetoupdate:
-        filetoupdate.write("I have been updated.")
-
-    # create source reference to check source dir integrity
-    shutil.copytree(
-        tmp_path / "data" / "dir_source_1", tmp_path / "data" / "dir_source_1_ref"
-    )
-    shutil.copytree(
-        tmp_path / "data" / "dir_source_2", tmp_path / "data" / "dir_source_2_ref"
-    )
-
-    # create dest reference for check dest dir integrity after dry run
-    shutil.copytree(
-        tmp_path / "data" / "dir_dest_1", tmp_path / "data" / "dir_dest_1_ref"
-    )
-    shutil.copytree(
-        tmp_path / "data" / "dir_dest_2", tmp_path / "data" / "dir_dest_2_ref"
-    )
-    return tmp_path
-
-
-@pytest.fixture(scope="function")
-def dir_pairs(dir_testrun, num_dirs=2):
-    dir_pairs = {}
-    dir_pairs["source_dest"] = [
-        (
-            dir_testrun / "data" / ("dir_source_" + str(i)),
-            dir_testrun / "data" / ("dir_dest_" + str(i)),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    dir_pairs["source_ref"] = [
-        (
-            dir_testrun / "data" / ("dir_source_" + str(i)),
-            dir_testrun / "data" / ("dir_source_" + str(i) + "_ref"),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    dir_pairs["dest_ref"] = [
-        (
-            dir_testrun / "data" / ("dir_dest_" + str(i)),
-            dir_testrun / "data" / ("dir_dest_" + str(i) + "_ref"),
-        )
-        for i in range(1, num_dirs + 1)
-    ]
-    return dir_pairs
-
-
-@pytest.fixture(scope="function")
 def cfg_testrun(dir_testrun):
     path_cfg_template = Path(__file__).parent / "cfg_template.csv"
     path_cfg_test = create_test_cfg(path_cfg_template, dir_testrun)
@@ -105,50 +38,64 @@ def cfg_testrun(dir_testrun):
 @parametrize_default_ids("from_cfg", [False, True])
 @parametrize_default_ids("delete", [False, True])
 @parametrize_default_ids("dry_run", [False, True])
-def test_backup(cfg_testrun, dir_pairs, from_cfg, delete, dry_run):
+def test_backup(
+    cfg_testrun,
+    dirs_source,
+    dirs_dest,
+    dirs_source_ref,
+    dirs_dest_ref,
+    from_cfg,
+    delete,
+    dry_run,
+):
     # run the actual function to test
     if from_cfg:
-        saver = FileSaver(
-            Namespace(
-                cfg_file=cfg_testrun,
-                dir_source=None,
-                dir_dest=None,
-                delete=delete,
-                dry_run=dry_run,
-            )
-        )
-        saver.run()
+        patch_args = ["clifs", "backup", "--cfg_file", str(cfg_testrun)]
+        if delete:
+            patch_args.append("--delete")
+        if dry_run:
+            patch_args.append("--dry_run")
+
+        with patch("sys.argv", patch_args):
+            main()
+
     else:
-        for dir_pair in dir_pairs["source_dest"]:
-            saver = FileSaver(
-                Namespace(
-                    cfg_file=None,
-                    dir_source=str(dir_pair[0]),
-                    dir_dest=str(dir_pair[1]),
-                    delete=delete,
-                    dry_run=dry_run,
-                )
-            )
-            saver.run()
+        for idx_dir in range(len(dirs_source)):
+            patch_args = [
+                "clifs",
+                "backup",
+                "--dir_source",
+                str(dirs_source[idx_dir]),
+                "--dir_dest",
+                str(dirs_dest[idx_dir]),
+            ]
+            if delete:
+                patch_args.append("--delete")
+            if dry_run:
+                patch_args.append("--dry_run")
+
+            with patch("sys.argv", patch_args):
+                main()
+
     print("Backup went through.")
 
     if not dry_run:
         # check for proper updating and deleting
-        for dir_pair in dir_pairs["source_dest"]:
-            compare_files(*dir_pair)
+        for idx_dir in range(len(dirs_source)):
+            assert_files_present(dirs_source[idx_dir], dirs_dest[idx_dir])
             if delete:
                 assert not substr_in_dir_names(
-                    dir_pair[1]
+                    dirs_dest[idx_dir]
                 ), "Files only present in destination dir have not been deleted."
             else:
                 assert substr_in_dir_names(
-                    dir_pair[1]
+                    dirs_dest[idx_dir]
                 ), "Files only present in destination dir have been deleted."
     else:
         # check for dest dir integrity
-        for dir_pair in dir_pairs["dest_ref"]:
-            compare_files(*dir_pair)
+        for idx_dir in range(len(dirs_source)):
+            assert_files_present(dirs_dest[idx_dir], dirs_dest_ref[idx_dir])
 
     # check for source dir integrity
-    for dir_pair in dir_pairs["source_ref"]:
-        compare_files(*dir_pair)
+    for idx_dir in range(len(dirs_source)):
+        assert_files_present(dirs_source[idx_dir], dirs_source_ref[idx_dir])

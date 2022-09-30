@@ -1,14 +1,19 @@
+# -*- coding: utf-8 -*-
+
 import os
 from pathlib import Path
 import pytest
 import re
-import shutil
 
 
-def read_lines_from_file(path_file):
-    with path_file.open("r", encoding="utf-8") as file:
-        lines = file.readlines()
-    return lines
+def get_files(dir, sub_str=None):
+    pattern = "*" if sub_str is None else f"*{sub_str}*"
+    return [path for path in dir.rglob(pattern) if path.is_file()]
+
+
+def update_mtime(path_file):
+    with path_file.open("a") as filetoupdate:
+        filetoupdate.write("I have been updated.")
 
 
 def escape_ansi(string):
@@ -22,7 +27,7 @@ def check_mtime_consistency(file1, file2):
     ), f"File modification time is not consistent for file {file1}"
 
 
-def compare_files(dir_source, dir_ref, check_mtime=True):
+def assert_files_present(dir_source, dir_ref, check_mtime=True):
     print("---------------------")
     print(
         f"checking consistencies of folders:"
@@ -45,7 +50,7 @@ def compare_files(dir_source, dir_ref, check_mtime=True):
 
 
 def substr_in_dir_names(directory, sub_str="DELME", files_only=False):
-    if files_only == True:
+    if files_only:
         return any([sub_str in x.name for x in directory.rglob("*") if x.is_file()])
     else:
         return any([sub_str in x.name for x in directory.rglob("*")])
@@ -64,59 +69,3 @@ def parametrize_default_ids(argname, argvalues, indirect=False, ids=None, scope=
     return pytest.mark.parametrize(
         argname, argvalues, indirect=indirect, ids=ids, scope=scope
     )
-
-
-@pytest.fixture(scope="function")
-def dir_testrun(tmp_path: Path):
-    # create source dest structure for update test
-    shutil.copytree(Path(__file__).parents[1] / "common" / "data", tmp_path / "data")
-    return tmp_path
-
-
-@pytest.fixture(scope="function")
-def dirs_source(dir_testrun, num_dirs=2):
-    return [
-        (dir_testrun / "data" / ("dir_source_" + str(i)))
-        for i in range(1, num_dirs + 1)
-    ]
-
-
-@pytest.fixture(scope="function")
-def dirs_dest(dir_testrun, num_dirs=2):
-    return [
-        (dir_testrun / "data" / ("dir_dest_" + str(i))) for i in range(1, num_dirs + 1)
-    ]
-
-
-@pytest.fixture(scope="function")
-def dirs_source_ref(dirs_source):
-    # create source reference to check source dir integrity
-    dirs_res = []
-    for dir in dirs_source:
-        dir_res = dir.parent / (dir.name + "_ref")
-        print(dir_res)
-        shutil.copytree(dir, dir_res)
-        dirs_res.append(dir_res)
-    return dirs_res
-
-
-@pytest.fixture(scope="function")
-def dirs_empty(dir_testrun, num_dirs=2):
-    lst_dirs = []
-    for i in range(num_dirs):
-        dir = dir_testrun / "data" / ("dir_empty_" + str(i + 1))
-        dir.mkdir()
-        lst_dirs.append(dir)
-    return lst_dirs
-
-@pytest.fixture(scope="function")
-def path_filterlist_txt(dir_testrun):
-    return dir_testrun / "data" / "list_filter.txt"
-
-@pytest.fixture(scope="function")
-def path_filterlist_csv(dir_testrun):
-    return dir_testrun / "data" / "list_filter.csv"
-
-@pytest.fixture(scope="function")
-def path_filterlist_tsv(dir_testrun):
-    return dir_testrun / "data" / "list_filter.tsv"

@@ -24,18 +24,18 @@ def wrap_string(
 def size2str(
     size: Union[int, float], ansiescape_color: str = ANSI_COLORS["cyan"]
 ) -> str:
-    if size >= (1024 ** 5):
+    if size >= (1024**5):
         unit = "PB"
-        size = round(size / (1024 ** 5), 2)
-    elif size >= (1024 ** 4):
+        size = round(size / (1024**5), 2)
+    elif size >= (1024**4):
         unit = "TB"
-        size = round(size / (1024 ** 4), 2)
-    elif size >= (1024 ** 3):
+        size = round(size / (1024**4), 2)
+    elif size >= (1024**3):
         unit = "GB"
-        size = round(size / (1024 ** 3), 2)
+        size = round(size / (1024**3), 2)
     else:
         unit = "MB"
-        size = round(size / (1024 ** 2), 2)
+        size = round(size / (1024**2), 2)
     return wrap_string(f"{size:6.2f} " + unit, prefix=ansiescape_color)
 
 
