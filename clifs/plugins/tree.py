@@ -85,7 +85,7 @@ class DirectoryTree(ClifsPlugin):
 
         entries = directory.iterdir()
         try:
-            entries = sorted(entries, key=lambda item: not item.is_file())
+            entries = sorted(entries, key=lambda item: (not item.is_file(), str(item)))
         except PermissionError as err:
             print(
                 wrap_string(
