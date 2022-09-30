@@ -15,13 +15,13 @@ class FileDeleter(ClifsPlugin, FileGetterMixin):
 
     skip_preview: bool
 
-    @staticmethod
-    def init_parser(parser: ArgumentParser):
+    @classmethod
+    def init_parser(cls, parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
         # add args from FileGetterMixin to arg parser
-        super(FileDeleter, FileDeleter).init_parser_mixin(parser)
+        super().init_parser_mixin(parser)
 
         parser.add_argument(
             "-sp",

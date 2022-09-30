@@ -52,13 +52,13 @@ class FileCopier(ClifsPlugin, FileGetterMixin):
     flatten: bool
     dryrun: bool
 
-    @staticmethod
-    def init_parser(parser: ArgumentParser):
+    @classmethod
+    def init_parser(cls, parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
         # add args from FileGetterMixin to arg parser
-        super(FileCopier, FileCopier).init_parser_mixin(parser)
+        super().init_parser_mixin(parser)
         init_parser_como(parser)
 
     def __init__(self, args):
@@ -98,13 +98,13 @@ class FileMover(ClifsPlugin, FileGetterMixin):
     flatten: bool
     dryrun: bool
 
-    @staticmethod
-    def init_parser(parser: ArgumentParser):
+    @classmethod
+    def init_parser(cls, parser: ArgumentParser):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
         # add args from FileGetterMixin to arg parser
-        super(FileCopier, FileCopier).init_parser_mixin(parser)
+        super().init_parser_mixin(parser)
         init_parser_como(parser)
 
     def __init__(self, args):
