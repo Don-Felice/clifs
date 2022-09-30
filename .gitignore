@@ -5,3 +5,5 @@
 __pycache__/
 .vscode/
 build/
+.mypy_cache/
+.ipynb_checkpoints
