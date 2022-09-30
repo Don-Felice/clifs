@@ -3,7 +3,7 @@
 
 import argparse
 import colorama  # type: ignore
-from pkg_resources import iter_entry_points  # type: ignore
+from importlib.metadata import entry_points
 import sys
 
 
@@ -16,7 +16,7 @@ def main():
     commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
     plugins = {}
-    for entry_point in iter_entry_points("clifs_plugins"):
+    for entry_point in entry_points()["clifs_plugins"]:
         plugins[entry_point.name] = entry_point.load()
         subparser = commands.add_parser(
             entry_point.name, help=plugins[entry_point.name].__doc__
