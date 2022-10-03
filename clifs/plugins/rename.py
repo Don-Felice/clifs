@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from argparse import ArgumentParser
 import sys
+from argparse import ArgumentParser
 
 from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_cli import user_query

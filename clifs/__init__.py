@@ -1,4 +1,3 @@
-from pathlib import Path
+import importlib.metadata
 
-with (Path(__file__).parents[1] / "VERSION").open("r") as version_file:
-    __version__ = version_file.read().strip()
+__version__ = importlib.metadata.version("clifs")

@@ -1,16 +1,12 @@
-name: Lint and Test
+name: Lint
 
 on: [push]
 
 jobs:
-  test:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
-
+  lint:
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
 
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
@@ -22,16 +18,17 @@ jobs:
           python -m pip install -U pip setuptools wheel
           pip install -r requirements.txt
           pip install -r requirements_test.txt
-          pip install .
+      
+      - name: isort
+        uses: jamescurtin/isort-action@master
 
-      - name: Lint
+      - name: black
+        uses: psf/black@stable
+      
+      - name: flake8
         uses: py-actions/flake8@v1
         with:
           max-line-length: "88"
-
+      
       - name: Mypy
         run: mypy clifs/
-
-      - name: Test
-        run: |
-          pytest --cov-report term-missing --cov=clifs tests/

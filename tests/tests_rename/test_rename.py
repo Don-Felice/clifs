@@ -2,12 +2,11 @@
 
 from unittest.mock import patch
 
-
 from clifs.__main__ import main
 from tests.common.utils_testing import (
-    substr_in_dir_names,
-    parametrize_default_ids,
     assert_files_present,
+    parametrize_default_ids,
+    substr_in_dir_names,
 )
 
 

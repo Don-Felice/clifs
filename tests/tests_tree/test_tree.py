@@ -8,10 +8,7 @@ import pytest
 
 from clifs.__main__ import main
 from clifs.plugins.tree import DirectoryTree
-from tests.common.utils_testing import (
-    escape_ansi,
-    parametrize_default_ids,
-)
+from tests.common.utils_testing import escape_ansi, parametrize_default_ids
 
 
 @pytest.fixture()

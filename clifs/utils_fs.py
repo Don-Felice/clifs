@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from argparse import ArgumentParser
 import csv
-from pathlib import Path
 import re
 import shutil
 import sys
-from typing import List, Set, Union, Optional
+from argparse import ArgumentParser
+from pathlib import Path
+from typing import List, Optional, Set, Union
 
-
-from clifs.utils_cli import wrap_string, cli_bar, ANSI_COLORS, print_line
+from clifs.utils_cli import ANSI_COLORS, cli_bar, print_line, wrap_string
 
 
 class FileGetterMixin:

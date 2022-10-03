@@ -2,9 +2,7 @@
 
 
 from clifs.utils_fs import FileGetterMixin
-from tests.common.utils_testing import (
-    parametrize_default_ids,
-)
+from tests.common.utils_testing import parametrize_default_ids
 
 
 @parametrize_default_ids("filter_str", [".txt", "2", ""])

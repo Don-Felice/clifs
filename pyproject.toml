@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm[]"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clifs"
+description = "Command line interface for basic file system operations."
+authors = [  {email = "don.felice@gmx.net", name = "Felix Segerer"}]
+license = {text = "GNU GENERAL PUBLIC LICENSE"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "colorama>=0.4.3",
+]
+dynamic = ["version", "readme"]
+
+[tool.setuptools]
+include-package-data = true
+
+[project.scripts]
+clifs = "clifs.__main__:main"
+
+[project.entry-points."clifs.plugins"]
+tree = "clifs.plugins.tree:DirectoryTree"
+du = "clifs.plugins.disc_usage:DiscUsageExplorer"
+copy = "clifs.plugins.como:FileCopier"
+move = "clifs.plugins.como:FileMover"
+del = "clifs.plugins.delete:FileDeleter"
+ren = "clifs.plugins.rename:FileRenamer"
+backup = "clifs.plugins.backup.backup:FileSaver"
+
+[tool.setuptools.dynamic]
+version = {file = "clifs/VERSION"}
+readme = {file = "README.md"}
+
+[tool.setuptools.packages.find]
+exclude = ["tests*"]
+
+[tool.isort]
+profile = "black"
