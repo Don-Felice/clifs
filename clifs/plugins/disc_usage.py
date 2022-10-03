@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 
+import shutil
 from argparse import ArgumentParser
 from pathlib import Path
-import shutil
-from typing import List, Dict
+from typing import Dict, List
 
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_cli import wrap_string, ANSI_COLORS, size2str, cli_bar
+from clifs.utils_cli import ANSI_COLORS, cli_bar, size2str, wrap_string
 
 
 class DiscUsageExplorer(ClifsPlugin):

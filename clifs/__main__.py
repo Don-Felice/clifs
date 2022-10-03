@@ -2,11 +2,13 @@
 
 
 import argparse
-import colorama  # type: ignore
-from importlib.metadata import entry_points
 import sys
+from importlib.metadata import entry_points
+
+import colorama  # type: ignore
 
 import clifs
+
 
 def main():
     print(f"running `clifs` version: {clifs.__version__}")

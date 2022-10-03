@@ -36,3 +36,6 @@ readme = {file = "README.md"}
 
 [tool.setuptools.packages.find]
 exclude = ["tests*"]
+
+[tool.isort]
+profile = "black"

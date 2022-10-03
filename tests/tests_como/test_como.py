@@ -4,10 +4,7 @@
 from unittest.mock import patch
 
 from clifs.__main__ import main
-from tests.common.utils_testing import (
-    assert_files_present,
-    parametrize_default_ids,
-)
+from tests.common.utils_testing import assert_files_present, parametrize_default_ids
 
 
 @parametrize_default_ids(

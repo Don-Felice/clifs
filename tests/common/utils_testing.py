@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-from pathlib import Path
-import pytest
 import re
+from pathlib import Path
+
+import pytest
 
 
 def get_files(dir, sub_str=None):

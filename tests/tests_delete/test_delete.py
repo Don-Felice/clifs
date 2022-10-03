@@ -4,10 +4,7 @@
 from unittest.mock import patch
 
 from clifs.__main__ import main
-from tests.common.utils_testing import (
-    substr_in_dir_names,
-    parametrize_default_ids,
-)
+from tests.common.utils_testing import parametrize_default_ids, substr_in_dir_names
 
 
 @parametrize_default_ids("filter_str", ["DELME", "file"])

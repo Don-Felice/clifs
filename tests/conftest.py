@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 
-from pathlib import Path
-import pytest
 import shutil
+from pathlib import Path
+
+import pytest
 
 from tests.common.utils_testing import get_files, update_mtime
 

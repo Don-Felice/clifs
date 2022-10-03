@@ -1,16 +1,13 @@
 # -*- coding: utf-8 -*-
 
 
-from argparse import Namespace
 import re
+from argparse import Namespace
 from unittest.mock import patch
 
 from clifs.__main__ import main
 from clifs.plugins.disc_usage import DiscUsageExplorer
-from tests.common.utils_testing import (
-    parametrize_default_ids,
-    escape_ansi,
-)
+from tests.common.utils_testing import escape_ansi, parametrize_default_ids
 
 
 @parametrize_default_ids("usage_info", [(1000, 400, 600), (100000, 70000, 30000)])

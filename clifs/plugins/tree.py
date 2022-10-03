@@ -4,8 +4,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_cli import wrap_string, ANSI_COLORS, size2str
-
+from clifs.utils_cli import ANSI_COLORS, size2str, wrap_string
 
 PIPE = "│"
 ELBOW = "└──"

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from argparse import ArgumentParser, Namespace
-
-
-from collections import namedtuple
 import csv
-from pathlib import Path
 import shutil
-from typing import Optional, Union, List
 import time
+from argparse import ArgumentParser, Namespace
+from collections import namedtuple
+from pathlib import Path
+from typing import List, Optional, Union
 
 from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_cli import cli_bar
