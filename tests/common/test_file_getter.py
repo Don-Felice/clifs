@@ -30,16 +30,18 @@ def test_file_getter(
         # run the actual function to test
         file_getter = FileGetterMixin()
 
-        files_found = file_getter.get_files2process(
-            dir_source=dir,
-            recursive=recursive,
-            path_filterlist=path_filterlist
+        file_getter.dir_source = dir
+        file_getter.recursive = recursive
+        file_getter.filterlist = (
+            path_filterlist
             if path_filterlist is None
-            else request.getfixturevalue(path_filterlist),
-            header_filterlist=header_filterlist,
-            sep_filterlist=sep_filterlist,
-            filterstring=filter_str,
+            else request.getfixturevalue(path_filterlist)
         )
+        file_getter.filterlistheader = header_filterlist
+        file_getter.filterlistsep = sep_filterlist
+        file_getter.filterstring = filter_str
+
+        files_found = file_getter.get_files2process()
 
         pattern = f"*{filter_str}*" if filter_str else "*"
 

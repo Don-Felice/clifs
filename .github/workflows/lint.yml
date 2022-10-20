@@ -20,15 +20,16 @@ jobs:
           pip install -r requirements_test.txt
       
       - name: isort
-        uses: jamescurtin/isort-action@master
+        run: isort --check .
 
       - name: black
-        uses: psf/black@stable
+        run: black --check .
       
       - name: flake8
-        uses: py-actions/flake8@v1
-        with:
-          max-line-length: "88"
+        run: pflake8 .
+
+      - name: pylint
+        run: pylint clifs/
       
       - name: Mypy
         run: mypy clifs/

@@ -58,7 +58,7 @@ class DirectoryTree(ClifsPlugin):
         for entry in self._tree:
             print(entry)
 
-    def _add_directory(
+    def _add_directory(  # pylint: disable=too-many-arguments
         self,
         directory,
         index=0,
@@ -102,11 +102,11 @@ class DirectoryTree(ClifsPlugin):
         entries_count = len(entries)
         size = 0  # initialize size of sub-directories and files
 
-        for index, entry in enumerate(entries):
-            connector = ELBOW if index == entries_count - 1 else TEE
+        for sub_index, entry in enumerate(entries):
+            connector = ELBOW if sub_index == entries_count - 1 else TEE
             if entry.is_dir():
                 size += self._add_directory(
-                    entry, index, entries_count, prefix, connector
+                    entry, sub_index, entries_count, prefix, connector
                 )
             else:
                 if self.dirs_only and self.hide_sizes:

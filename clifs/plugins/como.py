@@ -63,14 +63,7 @@ class FileCopier(ClifsPlugin, FileGetterMixin):
 
     def __init__(self, args):
         super().__init__(args)
-        self.files2process = self.get_files2process(
-            dir_source=self.dir_source,
-            recursive=self.recursive,
-            path_filterlist=self.filterlist,
-            header_filterlist=self.filterlistheader,
-            sep_filterlist=self.filterlistsep,
-            filterstring=self.filterstring,
-        )
+        self.files2process = self.get_files2process()
 
     def run(self):
         self.exit_if_nothing_to_process(self.files2process)
@@ -109,14 +102,7 @@ class FileMover(ClifsPlugin, FileGetterMixin):
 
     def __init__(self, args):
         super().__init__(args)
-        self.files2process = self.get_files2process(
-            dir_source=self.dir_source,
-            recursive=self.recursive,
-            path_filterlist=self.filterlist,
-            header_filterlist=self.filterlistheader,
-            sep_filterlist=self.filterlistsep,
-            filterstring=self.filterstring,
-        )
+        self.files2process = self.get_files2process()
 
     def run(self):
         self.exit_if_nothing_to_process(self.files2process)

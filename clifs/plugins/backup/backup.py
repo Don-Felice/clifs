@@ -30,8 +30,7 @@ def conditional_copy(path_source: Path, path_dest: Path, dry_run: bool = False):
             path_dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(path_source, path_dest)
         return 1
-    else:
-        return 0
+    return 0
 
 
 def conditional_delete(
@@ -51,8 +50,7 @@ def conditional_delete(
             if not dry_run:
                 path_dest.unlink()
         return 1
-    else:
-        return 0
+    return 0
 
 
 def list_filedirs(dir_source: Union[str, Path]):
@@ -128,9 +126,9 @@ class FileSaver(ClifsPlugin):
         )
 
         if self.cfg_file:
-            # TODO: check_cfg_format(cfg_file)
+            # TODO: check_cfg_format(cfg_file)  # pylint: disable=fixme
             self.dir_pairs = []
-            with open(self.cfg_file, newline="\n") as cfg_file:
+            with open(self.cfg_file, newline="\n", encoding="utf-8") as cfg_file:
                 reader = csv.DictReader(cfg_file, fieldnames=["source_dir", "dest_dir"])
                 # skip header row
                 next(reader)
@@ -179,15 +177,15 @@ class FileSaver(ClifsPlugin):
 
         list_files_source, list_dirs_source = list_filedirs(dir_source)
         # initialize stats
-        num_checked = len(list_files_source)
-        num_copied = 0
-        num_deleted = 0
+        counter = {"checked": len(list_files_source), "copied": 0, "deleted": 0}
 
         for cur_num_file, cur_file in enumerate(list_files_source, start=1):
-            cur_dest = Path(str(cur_file).replace(str(dir_source), str(dir_dest)))
-            num_copied += conditional_copy(cur_file, cur_dest, dry_run=dry_run)
-            cli_bar(cur_num_file, num_checked, suffix="of files checked")
-            cur_num_file += 1
+            counter["copied"] += conditional_copy(
+                cur_file,
+                Path(str(cur_file).replace(str(dir_source), str(dir_dest))),
+                dry_run=dry_run,
+            )
+            cli_bar(cur_num_file, counter["checked"], suffix="of files checked")
 
         if delete:
             print("All files stored, checking for files to delete now.")
@@ -195,24 +193,24 @@ class FileSaver(ClifsPlugin):
 
             num_dest = len(list_files_dest)
             for cur_num_file, cur_file_dest in enumerate(list_files_dest, start=1):
-                cur_file_source = Path(
-                    str(cur_file_dest).replace(str(dir_dest), str(dir_source))
-                )
-                num_deleted += conditional_delete(
-                    cur_file_source, cur_file_dest, list_files_source, dry_run=dry_run
+                counter["deleted"] += conditional_delete(
+                    Path(str(cur_file_dest).replace(str(dir_dest), str(dir_source))),
+                    cur_file_dest,
+                    list_files_source,
+                    dry_run=dry_run,
                 )
                 cli_bar(cur_num_file, num_dest, suffix="of files checked")
-                cur_num_file += 1
 
             for cur_dir_dest in list_dirs_dest:
-                cur_dir_source = Path(
-                    str(cur_dir_dest).replace(str(dir_dest), str(dir_source))
-                )
                 conditional_delete(
-                    cur_dir_source, cur_dir_dest, list_dirs_source, dry_run=dry_run
+                    Path(str(cur_dir_dest).replace(str(dir_dest), str(dir_source))),
+                    cur_dir_dest,
+                    list_dirs_source,
+                    dry_run=dry_run,
                 )
 
         print(
-            f'\nStored {num_copied} files out of {num_checked} from "{dir_source}".'
-            f"\nDeleted {num_deleted} files in destination directory."
+            f"\nStored {counter['copied']} files out of {counter['checked']} from "
+            f"'{dir_source}'.\n"
+            f"Deleted {counter['deleted']} files in destination directory."
         )

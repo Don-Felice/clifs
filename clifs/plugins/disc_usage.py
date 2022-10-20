@@ -37,7 +37,6 @@ class DiscUsageExplorer(ClifsPlugin):
 
     def run(self):
         self._print_usage_info()
-        pass
 
     def _get_usage_info(self) -> Dict[str, Dict[str, int]]:
         disc_usage = {}
@@ -54,9 +53,7 @@ class DiscUsageExplorer(ClifsPlugin):
     def _print_usage_info(self):
         print("")
         for directory, dict_usage in self._dict_usage.items():
-            name_dir = (
-                Path(directory).name if not Path(directory).name == "" else directory
-            )
+            name_dir = Path(directory).name if Path(directory).name != "" else directory
             path_dir = str(Path(directory).resolve())
             print(
                 name_dir

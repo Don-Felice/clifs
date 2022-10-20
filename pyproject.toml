@@ -5,14 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "clifs"
 description = "Command line interface for basic file system operations."
-authors = [  {email = "don.felice@gmx.net", name = "Felix Segerer"}]
-license = {text = "GNU GENERAL PUBLIC LICENSE"}
-classifiers = [
-    "Programming Language :: Python :: 3",
-]
-dependencies = [
-    "colorama>=0.4.3",
-]
+authors = [{ email = "don.felice@gmx.net", name = "Felix Segerer" }]
+license = { text = "GNU GENERAL PUBLIC LICENSE" }
+classifiers = ["Programming Language :: Python :: 3"]
+dependencies = ["colorama>=0.4.3"]
 dynamic = ["version", "readme"]
 
 [tool.setuptools]
@@ -31,11 +27,25 @@ ren = "clifs.plugins.rename:FileRenamer"
 backup = "clifs.plugins.backup.backup:FileSaver"
 
 [tool.setuptools.dynamic]
-version = {file = "clifs/VERSION"}
-readme = {file = "README.md"}
+version = { file = "clifs/VERSION" }
+readme = { file = "README.md" }
 
 [tool.setuptools.packages.find]
 exclude = ["tests*"]
 
 [tool.isort]
 profile = "black"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "--cov --cov-report term-missing"
+
+[tool.coverage.run]
+source = ['clifs']
+
+[tool.flake8]
+max-line-length = 88
+count = true
+
+[tool.pylint.'MESSAGES CONTROL']
+disable="C0116, C0114"

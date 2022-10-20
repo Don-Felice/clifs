@@ -49,23 +49,19 @@ def cli_bar(
 
     filled_len = int(round(bar_len * status / float(total)))
     percents = round(100.0 * status / float(total), 1)
-    bar = "█" * filled_len + "-" * (bar_len - filled_len)
-    output = f"|{bar}| {percents:5}% {suffix}"
+    res_bar = "█" * filled_len + "-" * (bar_len - filled_len)
+    output = f"|{res_bar}| {percents:5}% {suffix}"
     if return_string:
         return output
-    else:
-        print(output, flush=True)
-        return None
+    print(output, flush=True)
+    return None
 
 
 def user_query(message: str) -> bool:
     yes = {"yes", "y"}
     print(message)
     choice = input().lower()
-    if choice in yes:
-        return True
-    else:
-        return False
+    return bool(choice in yes)
 
 
 def print_line(length: int = 50):
