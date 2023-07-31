@@ -14,7 +14,6 @@ from tests.common.utils_testing import escape_ansi, parametrize_default_ids
 def test_delete_numbers(dirs_empty, usage_info):
     # run the actual function to test
     with patch("shutil.disk_usage", return_value=(usage_info)):
-
         usage_explorer = DiscUsageExplorer(
             Namespace(
                 dirs=[str(x) for x in dirs_empty],
@@ -22,7 +21,6 @@ def test_delete_numbers(dirs_empty, usage_info):
         )
 
     for idx_dir, dir in enumerate(dirs_empty, 1):
-
         space_total = usage_explorer._dict_usage[str(dir)]["total"]
         space_used = usage_explorer._dict_usage[str(dir)]["used"]
         space_free = usage_explorer._dict_usage[str(dir)]["free"]
@@ -40,7 +38,6 @@ def test_delete_numbers(dirs_empty, usage_info):
 
 @parametrize_default_ids("usage_info", [(1000, 400, 600), (100000, 70000, 30000)])
 def test_delete_in_out(dirs_empty, usage_info, capfd):
-
     # run the actual function to test
     with patch("sys.argv", ["clifs", "du"] + [str(x) for x in dirs_empty]), patch(
         "shutil.disk_usage", return_value=(usage_info)

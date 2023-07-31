@@ -75,7 +75,6 @@ class FileGetterMixin:
         )
 
     def get_files2process(self) -> List[Path]:
-
         files2process = self._get_files_by_filterstring(
             self.dir_source, filterstring=self.filterstring, recursive=self.recursive
         )
@@ -144,8 +143,8 @@ def _list_from_csv(
 
 def _get_unique_path(
     path_candidate: Path,
-    to_avoid_additionally: Set[Path] = None,
-    to_allow_additionally: Set[Path] = None,
+    to_avoid_additionally: Optional[Set[Path]] = None,
+    to_allow_additionally: Optional[Set[Path]] = None,
 ) -> Path:
     if to_avoid_additionally is None:
         to_avoid_additionally = set()

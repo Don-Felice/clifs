@@ -46,7 +46,6 @@ def cli_bar(
     return_string: bool = False,
     bar_len: int = 20,
 ) -> Optional[str]:
-
     filled_len = int(round(bar_len * status / float(total)))
     percents = round(100.0 * status / float(total), 1)
     res_bar = "█" * filled_len + "-" * (bar_len - filled_len)

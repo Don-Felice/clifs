@@ -17,7 +17,6 @@ def test_rename(dirs_source, dirs_source_ref, re_pattern, substitute):
     # run the actual function to test
 
     for idx_dir, dir in enumerate(dirs_source):
-
         patch_args = [
             "clifs",
             "ren",

@@ -25,7 +25,6 @@ def test_file_getter(
     sep_filterlist,
     request,
 ):
-
     for dir in dirs_source:
         # run the actual function to test
         file_getter = FileGetterMixin()

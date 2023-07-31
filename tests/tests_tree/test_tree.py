@@ -47,7 +47,6 @@ def trees_source_dir():
 @parametrize_default_ids("dirs_only", [False, True])
 @parametrize_default_ids("hide_sizes", [False, True])
 def test_tree(dirs_source, trees_source_dir, dirs_only, hide_sizes):
-
     for idx, folder in enumerate(dirs_source):
         tree = DirectoryTree(
             Namespace(

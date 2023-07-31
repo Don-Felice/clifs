@@ -28,7 +28,6 @@ def test_copy(
     n_test_dirs = len(dirs_source)
     # run the actual function to test
     for idx_dir in range(n_test_dirs):
-
         patch_args = [
             "clifs",
             "copy",

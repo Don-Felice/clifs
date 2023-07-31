@@ -111,7 +111,6 @@ class FileSaver(ClifsPlugin):
         )
 
     def __init__(self, args: Namespace):
-
         self.dir_source: Optional[Union[str, Path]] = args.dir_source
         self.dir_dest: Optional[Union[str, Path]] = args.dir_dest
         self.cfg_file: Optional[Union[str, Path]] = args.cfg_file
