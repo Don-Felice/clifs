@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+"""
+Main entry point
+"""
 
 
 import argparse
@@ -10,7 +12,7 @@ import colorama  # type: ignore
 import clifs
 
 
-def main():
+def main() -> None:
     print(f"running `clifs` version: {clifs.__version__}")
     colorama.init()  # allow for ansi escape sequences to have colorful cmd output
 

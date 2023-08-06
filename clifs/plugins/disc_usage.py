@@ -16,10 +16,9 @@ class DiscUsageExplorer(ClifsPlugin):
     """
 
     dirs: List[str]
-    _dict_usage: dict
 
     @staticmethod
-    def init_parser(parser: ArgumentParser):
+    def init_parser(parser: ArgumentParser) -> None:
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -31,11 +30,11 @@ class DiscUsageExplorer(ClifsPlugin):
             help="Directory or directories do get info from.",
         )
 
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         super().__init__(args)
-        self._dict_usage = self._get_usage_info()
+        self._dict_usage: Dict[str, Dict[str, int]] = self._get_usage_info()
 
-    def run(self):
+    def run(self) -> None:
         self._print_usage_info()
 
     def _get_usage_info(self) -> Dict[str, Dict[str, int]]:
@@ -50,7 +49,7 @@ class DiscUsageExplorer(ClifsPlugin):
             disc_usage[directory] = dict_usage
         return disc_usage
 
-    def _print_usage_info(self):
+    def _print_usage_info(self) -> None:
         print("")
         for directory, dict_usage in self._dict_usage.items():
             name_dir = Path(directory).name if Path(directory).name != "" else directory
@@ -76,7 +75,7 @@ class DiscUsageExplorer(ClifsPlugin):
             str_free = size2str(dict_usage["free"], ansiescape_color=color)
 
             usage_bar = wrap_string(
-                cli_bar(dict_usage["used"], dict_usage["total"], return_string=True),
+                cli_bar(dict_usage["used"], dict_usage["total"], print_out=False),
                 prefix=color,
             )
 

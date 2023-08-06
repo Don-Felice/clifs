@@ -2,6 +2,8 @@
 
 import sys
 from argparse import ArgumentParser
+from pathlib import Path
+from typing import List
 
 from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_cli import user_query
@@ -16,7 +18,7 @@ class FileDeleter(ClifsPlugin, FileGetterMixin):
     skip_preview: bool
 
     @classmethod
-    def init_parser(cls, parser: ArgumentParser):
+    def init_parser(cls, parser: ArgumentParser) -> None:
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -31,11 +33,11 @@ class FileDeleter(ClifsPlugin, FileGetterMixin):
             "For the brave only...",
         )
 
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         super().__init__(args)
-        self.files2process = self.get_files2process()
+        self.files2process: List[Path] = self.get_files2process()
 
-    def run(self):
+    def run(self) -> None:
         self.exit_if_nothing_to_process(self.files2process)
 
         if not self.skip_preview:
