@@ -12,7 +12,7 @@ from clifs.utils_cli import ANSI_COLORS, cli_bar, size2str, wrap_string
 
 class DiscUsageExplorer(ClifsPlugin):
     """
-    Display a tree of the file system including item sizes.
+    Display disk usage for one or more directories.
     """
 
     dirs: List[str]
