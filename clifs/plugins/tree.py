@@ -13,7 +13,7 @@ ELBOW = "└──"
 TEE = "├──"
 PIPE_PREFIX = "│   "
 SPACE_PREFIX = "    "
-SPACE_SIZE = "  "
+SPACE_SIZE = " "
 
 
 class Entry(ABC):
@@ -238,8 +238,8 @@ class DirectoryTree(ClifsPlugin):
             dirs_only=self.dirs_only,
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.dir.__str__()
 
-    def run(self):
+    def run(self) -> None:
         print(self)

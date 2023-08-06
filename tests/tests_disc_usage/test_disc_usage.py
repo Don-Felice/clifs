@@ -48,7 +48,7 @@ def test_delete_in_out(dirs_empty, usage_info, capfd):
     for sp_type, sp_val in zip(["total", "used", "free"], usage_info):
         assert len(
             re.findall(
-                rf"{sp_type}: *{sp_val / 10**6:.2f} MB", escape_ansi(captured.out)
+                rf"{sp_type}: *{sp_val / 1024:.2f} KB", escape_ansi(captured.out)
             )
         ) == len(dirs_empty)
     perc_used = round(100.0 * usage_info[1] / float(usage_info[0]), 1)
