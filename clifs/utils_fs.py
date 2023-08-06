@@ -1,4 +1,6 @@
-# -*- coding: utf-8 -*-
+"""
+Utilities for the file system
+"""
 
 import csv
 import re
@@ -75,7 +77,6 @@ class FileGetterMixin:
         )
 
     def get_files2process(self) -> List[Path]:
-
         files2process = self._get_files_by_filterstring(
             self.dir_source, filterstring=self.filterstring, recursive=self.recursive
         )
@@ -144,8 +145,8 @@ def _list_from_csv(
 
 def _get_unique_path(
     path_candidate: Path,
-    to_avoid_additionally: Set[Path] = None,
-    to_allow_additionally: Set[Path] = None,
+    to_avoid_additionally: Optional[Set[Path]] = None,
+    to_allow_additionally: Optional[Set[Path]] = None,
 ) -> Path:
     if to_avoid_additionally is None:
         to_avoid_additionally = set()
@@ -181,7 +182,7 @@ def _print_rename_message(
     num_files_all: int,
     preview_mode: bool = False,
     space_prefix: str = "    ",
-):
+) -> None:
     if preview_mode:
         print(space_prefix + message)
     else:
@@ -198,7 +199,7 @@ def como(
     keep_all: bool = False,
     flatten: bool = False,
     dry_run: bool = False,
-):
+) -> None:
     assert not (skip_existing and keep_all), (
         "You can only choose to either skip existing files "
         "or keep both versions. Choose wisely!"
@@ -274,7 +275,7 @@ def rename_files(
     replacement: str,
     *,
     preview_mode: bool = True,
-):
+) -> None:
     counter = {"bad_results": 0, "name_conflicts": 0, "files_renamed": 0}
     counter["files2process"] = len(files2process)
     print(f"Renaming {counter['files2process']} files.")

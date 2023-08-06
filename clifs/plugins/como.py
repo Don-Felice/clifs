@@ -8,7 +8,7 @@ from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_fs import FileGetterMixin, como
 
 
-def init_parser_como(parser: ArgumentParser):
+def init_parser_como(parser: ArgumentParser) -> None:
     """
     Adding arguments to an argparse parser. Needed for all clifs_plugins.
     """
@@ -53,7 +53,7 @@ class FileCopier(ClifsPlugin, FileGetterMixin):
     dryrun: bool
 
     @classmethod
-    def init_parser(cls, parser: ArgumentParser):
+    def init_parser(cls, parser: ArgumentParser) -> None:
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -61,11 +61,11 @@ class FileCopier(ClifsPlugin, FileGetterMixin):
         super().init_parser_mixin(parser)
         init_parser_como(parser)
 
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         super().__init__(args)
-        self.files2process = self.get_files2process()
+        self.files2process: List[Path] = self.get_files2process()
 
-    def run(self):
+    def run(self) -> None:
         self.exit_if_nothing_to_process(self.files2process)
         como(
             self.dir_source,
@@ -92,7 +92,7 @@ class FileMover(ClifsPlugin, FileGetterMixin):
     dryrun: bool
 
     @classmethod
-    def init_parser(cls, parser: ArgumentParser):
+    def init_parser(cls, parser: ArgumentParser) -> None:
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -100,11 +100,11 @@ class FileMover(ClifsPlugin, FileGetterMixin):
         super().init_parser_mixin(parser)
         init_parser_como(parser)
 
-    def __init__(self, args):
+    def __init__(self, args) -> None:
         super().__init__(args)
         self.files2process = self.get_files2process()
 
-    def run(self):
+    def run(self) -> None:
         self.exit_if_nothing_to_process(self.files2process)
         como(
             self.dir_source,

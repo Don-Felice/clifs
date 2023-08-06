@@ -6,7 +6,7 @@ import time
 from argparse import ArgumentParser, Namespace
 from collections import namedtuple
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple
 
 from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_cli import cli_bar
@@ -14,7 +14,7 @@ from clifs.utils_cli import cli_bar
 DirPair = namedtuple("DirPair", ["source", "dest"])
 
 
-def conditional_copy(path_source: Path, path_dest: Path, dry_run: bool = False):
+def conditional_copy(path_source: Path, path_dest: Path, dry_run: bool = False) -> int:
     """
     Copy only if dest file does not exist or is older than the souce file.
     """
@@ -35,7 +35,7 @@ def conditional_copy(path_source: Path, path_dest: Path, dry_run: bool = False):
 
 def conditional_delete(
     path_source: Path, path_dest: Path, list_source: List[Path], dry_run: bool = False
-):
+) -> int:
     """
     Delete only if `path_source`is not in `list_source`.
     """
@@ -53,12 +53,10 @@ def conditional_delete(
     return 0
 
 
-def list_filedirs(dir_source: Union[str, Path]):
+def list_filedirs(dir_source: Path) -> Tuple[List[Path], List[Path]]:
     """
     List files and directories in a source dir.
     """
-    if isinstance(dir_source, str):
-        dir_source = Path(dir_source)
 
     list_files = []
     list_dirs = []
@@ -77,20 +75,30 @@ class FileSaver(ClifsPlugin):
     Create backups from folders.
     """
 
+    dir_source: Path
+    dir_dest: Path
+    config_file: Path
+    delete: bool
+    dry_run: bool
+
     @staticmethod
-    def init_parser(parser: ArgumentParser):
+    def init_parser(parser: ArgumentParser) -> None:
         """
         Adding arguments to an argparse parser. Needed for all clifs plugins.
         """
 
         parser.add_argument(
-            "-s", "--dir_source", type=str, default=None, help="source directory"
+            "-s", "--dir_source", type=Path, default=None, help="source directory"
         )
         parser.add_argument(
-            "-d", "--dir_dest", type=str, default=None, help="destination directory"
+            "-d", "--dir_dest", type=Path, default=None, help="destination directory"
         )
         parser.add_argument(
-            "-cfg", "--cfg_file", type=str, default=None, help="destination directory"
+            "-cfg",
+            "--cfg_file",
+            type=Path,
+            default=None,
+            help="path to the config file",
         )
         parser.add_argument(
             "-del",
@@ -107,14 +115,13 @@ class FileSaver(ClifsPlugin):
             "--dry_run",
             action="store_true",
             default=False,
-            help="destination directory",
+            help="Do not touch anything",
         )
 
-    def __init__(self, args: Namespace):
-
-        self.dir_source: Optional[Union[str, Path]] = args.dir_source
-        self.dir_dest: Optional[Union[str, Path]] = args.dir_dest
-        self.cfg_file: Optional[Union[str, Path]] = args.cfg_file
+    def __init__(self, args: Namespace) -> None:
+        self.dir_source: Optional[Path] = args.dir_source
+        self.dir_dest: Optional[Path] = args.dir_dest
+        self.cfg_file: Optional[Path] = args.cfg_file
         self.delete: bool = args.delete
         self.dry_run: bool = args.dry_run
 
@@ -128,17 +135,19 @@ class FileSaver(ClifsPlugin):
         if self.cfg_file:
             # TODO: check_cfg_format(cfg_file)  # pylint: disable=fixme
             self.dir_pairs = []
-            with open(self.cfg_file, newline="\n", encoding="utf-8") as cfg_file:
+            with self.cfg_file.open(newline="\n", encoding="utf-8") as cfg_file:
                 reader = csv.DictReader(cfg_file, fieldnames=["source_dir", "dest_dir"])
                 # skip header row
                 next(reader)
                 for row in reader:
-                    self.dir_pairs.append(DirPair(row["source_dir"], row["dest_dir"]))
+                    self.dir_pairs.append(
+                        DirPair(Path(row["source_dir"]), Path(row["dest_dir"]))
+                    )
 
         else:
             self.dir_pairs = [DirPair(self.dir_source, self.dir_dest)]
 
-    def run(self):
+    def run(self) -> None:
         """
         Running the plugin. Needed for all clifs plugins.
         """
@@ -155,24 +164,11 @@ class FileSaver(ClifsPlugin):
 
     @staticmethod
     def backup_dir(
-        dir_source: Union[str, Path],
-        dir_dest: Union[str, Path],
+        dir_source: Path,
+        dir_dest: Path,
         delete: bool = False,
         dry_run: bool = False,
-    ):
-        """
-
-        :param delete:
-        :param dir_source:
-        :param dir_dest:
-        :param dry_run:
-        :return:
-        """
-        if isinstance(dir_source, str):
-            dir_source = Path(dir_source)
-        if isinstance(dir_dest, str):
-            dir_dest = Path(dir_dest)
-
+    ) -> None:
         print(f"Backing up files in {dir_source} to {dir_dest}.")
 
         list_files_source, list_dirs_source = list_filedirs(dir_source)

@@ -1,6 +1,8 @@
-# -*- coding: utf-8 -*-
+"""
+Utilities for the command line interface
+"""
 
-from typing import Optional, Union
+from typing import Union
 
 ANSI_COLORS = {
     "yellow": "\033[0;93m",
@@ -43,18 +45,16 @@ def cli_bar(
     status: int,
     total: int,
     suffix: str = "",
-    return_string: bool = False,
+    print_out: bool = True,
     bar_len: int = 20,
-) -> Optional[str]:
-
+) -> str:
     filled_len = int(round(bar_len * status / float(total)))
     percents = round(100.0 * status / float(total), 1)
     res_bar = "█" * filled_len + "-" * (bar_len - filled_len)
     output = f"|{res_bar}| {percents:5}% {suffix}"
-    if return_string:
-        return output
-    print(output, flush=True)
-    return None
+    if print_out:
+        print(output, flush=True)
+    return output
 
 
 def user_query(message: str) -> bool:
@@ -64,5 +64,5 @@ def user_query(message: str) -> bool:
     return bool(choice in yes)
 
 
-def print_line(length: int = 50):
+def print_line(length: int = 50) -> None:
     print("—" * length)
