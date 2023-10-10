@@ -4,14 +4,19 @@ import csv
 import shutil
 import time
 from argparse import ArgumentParser, Namespace
-from collections import namedtuple
+from collections import Counter
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, NamedTuple, Optional, Tuple
 
 from clifs.clifs_plugin import ClifsPlugin
 from clifs.utils_cli import cli_bar
 
-DirPair = namedtuple("DirPair", ["source", "dest"])
+
+class DirPair(NamedTuple):
+    """Source/Destination directory pair"""
+
+    source: Path
+    dest: Path
 
 
 def conditional_copy(path_source: Path, path_dest: Path, dry_run: bool = False) -> int:
@@ -37,7 +42,7 @@ def conditional_delete(
     path_source: Path, path_dest: Path, list_source: List[Path], dry_run: bool = False
 ) -> int:
     """
-    Delete only if `path_source`is not in `list_source`.
+    Delete only if `path_source` is not in `list_source`.
     """
     if path_source not in list_source:
         if path_dest.is_dir():
@@ -173,7 +178,7 @@ class FileSaver(ClifsPlugin):
 
         list_files_source, list_dirs_source = list_filedirs(dir_source)
         # initialize stats
-        counter = {"checked": len(list_files_source), "copied": 0, "deleted": 0}
+        counter = Counter(checked=len(list_files_source))
 
         for cur_num_file, cur_file in enumerate(list_files_source, start=1):
             counter["copied"] += conditional_copy(

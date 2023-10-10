@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import List, Optional
 
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_cli import ANSI_COLORS, size2str, wrap_string
+from clifs.utils_cli import AnsiColor, size2str, wrap_string
 
 PIPE = "│"
 ELBOW = "└──"
@@ -80,7 +80,7 @@ class Folder(Entry):
         self,
         dirs_only: bool = False,
         depth_th: Optional[int] = None,
-        folder_color: str = "yellow",
+        folder_color: AnsiColor = AnsiColor.YELLOW,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -103,8 +103,8 @@ class Folder(Entry):
         items = list(self.path.iterdir())
         try:
             items = sorted(items, key=lambda item: (not item.is_file(), str(item)))
-            for num_item, item in enumerate(items):
-                child_connector = ELBOW if num_item == len(items) - 1 else TEE
+            for num_item, item in enumerate(items, 1):
+                child_connector = TEE if num_item < len(items) else ELBOW
 
                 child_prefix = self.prefix
                 if self.connector == TEE:  # not last dir
@@ -142,10 +142,10 @@ class Folder(Entry):
                 wrap_string(
                     f'Warning: no permission to access "{self.path}". '
                     f"Size calculations of parent directories could be off.",
-                    prefix=ANSI_COLORS["red"],
+                    prefix=AnsiColor.RED,
                 )
             )
-            print(wrap_string(f'Error message: "{err}"', prefix=ANSI_COLORS["red"]))
+            print(wrap_string(f'Error message: "{err}"', prefix=AnsiColor.RED))
             self.have_access = False
             return []
 
@@ -158,18 +158,13 @@ class Folder(Entry):
         return size
 
     def __str__(self) -> str:
-        if self.depth != 0:
-            string = (
-                f"{self.prefix}{self.connector} "
-                f"{wrap_string(self.name, prefix=ANSI_COLORS[self.folder_color])}"
-            )
-        else:
-            string = wrap_string(self.name, prefix=ANSI_COLORS[self.folder_color])
+        string = f"{self.prefix}{self.connector} " if self.depth != 0 else ""
+        string += wrap_string(self.name, prefix=self.folder_color)
 
-        if not self.have_access:
-            string += SPACE_SIZE + wrap_string("no access", prefix=ANSI_COLORS["red"])
-        elif self.plot_size and self.size is not None:
+        if self.plot_size and self.size is not None:
             string += SPACE_SIZE + size2str(self.size)
+        elif not self.have_access:
+            string += SPACE_SIZE + wrap_string("no access", prefix=AnsiColor.RED)
 
         if (self.depth_th is None or self.depth < self.depth_th) and self.children:
             if self.dirs_only:

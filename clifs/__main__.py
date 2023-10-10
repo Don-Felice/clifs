@@ -10,11 +10,16 @@ from importlib.metadata import entry_points
 import colorama  # type: ignore
 
 import clifs
+from clifs.utils_cli import AnsiColor, wrap_string
 
 
 def main() -> None:
-    print(f"running `clifs` version: {clifs.__version__}")
     colorama.init()  # allow for ansi escape sequences to have colorful cmd output
+    print(
+        wrap_string(
+            f"running `clifs` version: {clifs.__version__}", prefix=AnsiColor.GRAY
+        )
+    )
 
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter

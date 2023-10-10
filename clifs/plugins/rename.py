@@ -43,7 +43,7 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
             "You can use \\1 \\2 etc. to refer to matching groups. "
             "A pattern like '(.+)\\.(.+)' in combination "
             "with a replacement like '\\1_suffix.\\2' will append suffixes. "
-            "Defaults to empty string",
+            "Defaults to empty string.",
         )
         parser.add_argument(
             "-sp",

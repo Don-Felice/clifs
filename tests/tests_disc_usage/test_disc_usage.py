@@ -21,9 +21,9 @@ def test_delete_numbers(dirs_empty, usage_info):
         )
 
     for idx_dir, dir in enumerate(dirs_empty, 1):
-        space_total = usage_explorer._dict_usage[str(dir)]["total"]
-        space_used = usage_explorer._dict_usage[str(dir)]["used"]
-        space_free = usage_explorer._dict_usage[str(dir)]["free"]
+        space_total = usage_explorer._dict_usage[str(dir)].total
+        space_used = usage_explorer._dict_usage[str(dir)].used
+        space_free = usage_explorer._dict_usage[str(dir)].free
 
         assert (
             space_total == usage_info[0]

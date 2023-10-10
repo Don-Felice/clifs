@@ -2,30 +2,36 @@
 Utilities for the command line interface
 """
 
+from enum import Enum
 from typing import Union
 
-ANSI_COLORS = {
-    "yellow": "\033[0;93m",
-    "cyan": "\033[0;36m",
-    "red": "\033[0;31m",
-    "green": "\033[0;32m",
-    "blue": "\033[0;34m",
-    "magenta": "\033[0;35m",
-    "white": "\033[0;37m",
-    "gray": "\033[0;90m",
-    "default": "\033[0m",
-}
+
+class AnsiColor(str, Enum):
+    """Ansi escape colors."""
+
+    DEFAULT = "\033[0m"
+    BLUE = "\033[0;34m"
+    CYAN = "\033[0;36m"
+    GRAY = "\033[0;90m"
+    GREEN = "\033[0;32m"
+    MAGENTA = "\033[0;35m"
+    RED = "\033[0;31m"
+    WHITE = "\033[0;37m"
+    YELLOW = "\033[0;93m"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 def wrap_string(
-    string: str, prefix: str = ANSI_COLORS["red"], suffix: str = ANSI_COLORS["default"]
+    string: str,
+    prefix: Union[str, AnsiColor] = AnsiColor.RED,
+    suffix: Union[str, AnsiColor] = AnsiColor.DEFAULT,
 ) -> str:
-    return prefix + string + suffix
+    return f"{prefix}{string}{suffix}"
 
 
-def size2str(
-    size: Union[int, float], ansiescape_color: str = ANSI_COLORS["cyan"]
-) -> str:
+def size2str(size: float, ansi_color: AnsiColor = AnsiColor.CYAN) -> str:
     if size < 1024**2:
         unit = "KB"
         size = round(size / 1024, 2)
@@ -41,7 +47,7 @@ def size2str(
     else:
         unit = "PB"
         size = round(size / 1024**5, 2)
-    return wrap_string(f"{size:7.2f} " + unit, prefix=ansiescape_color)
+    return wrap_string(f"{size:7.2f} {unit}", prefix=ansi_color)
 
 
 def cli_bar(
@@ -64,7 +70,7 @@ def user_query(message: str) -> bool:
     yes = {"yes", "y"}
     print(message)
     choice = input().lower()
-    return bool(choice in yes)
+    return choice in yes
 
 
 def print_line(length: int = 50) -> None:

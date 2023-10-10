@@ -7,11 +7,12 @@ import re
 import shutil
 import sys
 from argparse import ArgumentParser
+from collections import Counter
 from pathlib import Path
 from typing import List, Optional, Set
 from warnings import warn
 
-from clifs.utils_cli import ANSI_COLORS, cli_bar, print_line, wrap_string
+from clifs.utils_cli import AnsiColor, cli_bar, print_line, wrap_string
 
 INDENT = "    "
 
@@ -29,7 +30,7 @@ class FileGetterMixin:
     filterstring: str
 
     @staticmethod
-    def init_parser_mixin(parser: ArgumentParser):
+    def init_parser_mixin(parser: ArgumentParser) -> None:
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
@@ -89,7 +90,7 @@ class FileGetterMixin:
         return files2process
 
     @staticmethod
-    def exit_if_nothing_to_process(files2process: list):
+    def exit_if_nothing_to_process(files2process: list) -> None:
         if not files2process:
             print("Nothing to process.")
             sys.exit(0)
@@ -98,7 +99,7 @@ class FileGetterMixin:
     def _get_files_by_filterstring(
         dir_source: Path, filterstring: Optional[str] = None, recursive: bool = False
     ) -> List[Path]:
-        pattern_search = "*" + filterstring + "*" if filterstring else "*"
+        pattern_search = f"*{filterstring}*" if filterstring else "*"
         if recursive:
             pattern_search = "**/" + pattern_search
         return [file for file in dir_source.glob(pattern_search) if not file.is_dir()]
@@ -145,35 +146,36 @@ def _list_from_csv(
 
 def _get_unique_path(
     path_candidate: Path,
-    to_avoid_additionally: Optional[Set[Path]] = None,
-    to_allow_additionally: Optional[Set[Path]] = None,
+    set_taken: Optional[Set[Path]] = None,
+    set_free: Optional[Set[Path]] = None,
 ) -> Path:
-    if to_avoid_additionally is None:
-        to_avoid_additionally = set()
-    if to_allow_additionally is None:
-        to_allow_additionally = set()
-
-    if to_avoid_additionally.intersection(to_allow_additionally):
+    if set_taken is None:
+        set_taken = set()
+    if set_free is None:
+        set_free = set()
+    if intersect := set_taken.intersection(set_free):
         raise ValueError(
-            "Params 'to_avoid_addiotionally' and 'to_allow_additionally' contain "
-            "common elements: "
-            f"{to_avoid_additionally.intersection(to_allow_additionally)}."
+            "Params 'set_taken' and 'set_free' contain common elements: \n"
+            f"{intersect=}."
         )
-    name_file = path_candidate.stem
 
-    if (path_candidate not in to_allow_additionally) and (
-        path_candidate.exists() or path_candidate in to_avoid_additionally
-    ):
+    path_new = path_candidate
+    if (path_new.exists() or path_new in set_taken) and (path_new not in set_free):
+        name_file = path_new.stem
         count_match = re.match(r".* \((\d+)\)$", name_file)
         if count_match:
             count = int(count_match.group(1)) + 1
-            name_file_new = " ".join(name_file.split(" ")[0:-1]) + f" ({count})"
+            name_file = " ".join(name_file.split(" ")[0:-1])
         else:
-            name_file_new = name_file + " (2)"
-        path_new = path_candidate.parent / (name_file_new + path_candidate.suffix)
+            count = 2
 
-        return _get_unique_path(path_new, to_avoid_additionally, to_allow_additionally)
-    return path_candidate
+        while (path_new.exists() or path_new in set_taken) and (
+            path_new not in set_free
+        ):
+            name_file_new = name_file + f" ({count})"
+            path_new = path_candidate.parent / (name_file_new + path_candidate.suffix)
+            count += 1
+    return path_new
 
 
 def _print_rename_message(
@@ -205,9 +207,6 @@ def como(
         "or keep both versions. Choose wisely!"
     )
 
-    dir_source = Path(dir_source)
-    dir_dest = Path(dir_dest)
-
     dir_dest.parent.mkdir(exist_ok=True, parents=True)
 
     str_process = "moving" if move else "copying"
@@ -228,7 +227,7 @@ def como(
             if filepath_dest.exists():
                 txt_report = wrap_string(
                     f"Skipped as already present: " f"{file.name}",
-                    ANSI_COLORS["yellow"],
+                    AnsiColor.YELLOW,
                 )
                 cli_bar(
                     num_file,
@@ -242,14 +241,14 @@ def como(
                 txt_report = wrap_string(
                     f"Changed name as already present: "
                     f"{filepath_dest.name} -> {filepath_dest_new.name}",
-                    ANSI_COLORS["yellow"],
+                    AnsiColor.YELLOW,
                 )
                 filepath_dest = filepath_dest_new
         else:
             if filepath_dest.exists():
                 txt_report = wrap_string(
-                    f"Replacing existing version for: " f"{file.name}",
-                    ANSI_COLORS["yellow"],
+                    f"Replacing existing version for: {file.name}",
+                    AnsiColor.YELLOW,
                 )
 
         if not dry_run:
@@ -276,8 +275,7 @@ def rename_files(
     *,
     preview_mode: bool = True,
 ) -> None:
-    counter = {"bad_results": 0, "name_conflicts": 0, "files_renamed": 0}
-    counter["files2process"] = len(files2process)
+    counter = Counter(files2process=len(files2process))
     print(f"Renaming {counter['files2process']} files.")
     print_line()
     files_to_be_added: Set[Path] = set()
@@ -311,8 +309,8 @@ def rename_files(
         path_file_new = path_file.parent / name_new
         path_file_unique = _get_unique_path(
             path_file_new,
-            to_avoid_additionally=files_to_be_added,
-            to_allow_additionally=files_to_be_deleted | {path_file},
+            set_taken=files_to_be_added,
+            set_free=files_to_be_deleted | {path_file},
         )
 
         if path_file_new != path_file_unique:
@@ -322,13 +320,13 @@ def rename_files(
             message_rename += wrap_string(
                 f"{INDENT}Warning: resulting name would already be present in folder. "
                 "Will add numbering suffix.",
-                ANSI_COLORS["yellow"],
+                AnsiColor.YELLOW,
             )
             counter["name_conflicts"] += 1
 
         # skip files that are not renamed
         if path_file_new == path_file:
-            message_rename = wrap_string(message_rename, ANSI_COLORS["gray"])
+            message_rename = wrap_string(message_rename, AnsiColor.GRAY)
             _print_rename_message(
                 message_rename,
                 num_file,
@@ -353,20 +351,18 @@ def rename_files(
             files_to_be_deleted.add(path_file)
 
     if counter["bad_results"] > 0:
-        print(
-            warn(
-                f"{counter['bad_results']} out of {counter['files2process']} "
-                f"files not renamed as it would result in bad characters."
-            )
+        warn(
+            f"{counter['bad_results']} out of {counter['files2process']} "
+            f"files not renamed as it would result in bad characters."
         )
+
     if counter["name_conflicts"] > 0:
-        print(
-            warn(
-                f"{counter['name_conflicts']} out of {counter['files2process']} "
-                "renamings would have resulted in name conflicts. "
-                "Added numbering suffices to get unique names."
-            )
+        warn(
+            f"{counter['name_conflicts']} out of {counter['files2process']} "
+            "renamings would have resulted in name conflicts. "
+            "Added numbering suffices to get unique names."
         )
+
     print_line()
     if not preview_mode:
         print(
