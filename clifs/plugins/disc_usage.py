@@ -4,10 +4,18 @@
 import shutil
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, NamedTuple
 
 from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_cli import ANSI_COLORS, cli_bar, size2str, wrap_string
+from clifs.utils_cli import AnsiColor, cli_bar, size2str, wrap_string
+
+
+class UsageInfo(NamedTuple):
+    """Disk usage info"""
+
+    total: int
+    used: int
+    free: int
 
 
 class DiscUsageExplorer(ClifsPlugin):
@@ -32,50 +40,38 @@ class DiscUsageExplorer(ClifsPlugin):
 
     def __init__(self, args) -> None:
         super().__init__(args)
-        self._dict_usage: Dict[str, Dict[str, int]] = self._get_usage_info()
+        self._dict_usage: Dict[str, UsageInfo] = self._get_usage_info()
 
     def run(self) -> None:
         self._print_usage_info()
 
-    def _get_usage_info(self) -> Dict[str, Dict[str, int]]:
+    def _get_usage_info(self) -> Dict[str, UsageInfo]:
         disc_usage = {}
         for directory in self.dirs:
-            dict_usage = {}
-            (
-                dict_usage["total"],
-                dict_usage["used"],
-                dict_usage["free"],
-            ) = shutil.disk_usage(directory)
-            disc_usage[directory] = dict_usage
+            disc_usage[directory] = UsageInfo(*shutil.disk_usage(directory))
         return disc_usage
 
     def _print_usage_info(self) -> None:
         print("")
-        for directory, dict_usage in self._dict_usage.items():
+        for directory, usage_info in self._dict_usage.items():
             name_dir = Path(directory).name if Path(directory).name != "" else directory
             path_dir = str(Path(directory).resolve())
             print(
-                name_dir
-                + "    "
-                + wrap_string("(" + path_dir + ")", prefix=ANSI_COLORS["gray"])
+                name_dir + "    " + wrap_string(f"({path_dir})", prefix=AnsiColor.GRAY)
             )
-            if dict_usage["used"] / dict_usage["total"] > 0.9:
-                color = ANSI_COLORS["red"]
-            elif dict_usage["used"] / dict_usage["total"] > 0.70:
-                color = ANSI_COLORS["yellow"]
+            if frac_used := (usage_info.used / usage_info.total) <= 0.7:
+                color = AnsiColor.DEFAULT
+            elif frac_used <= 0.9:
+                color = AnsiColor.YELLOW
             else:
-                color = ANSI_COLORS["default"]
+                color = AnsiColor.RED
 
-            str_total = size2str(
-                dict_usage["total"], ansiescape_color=ANSI_COLORS["default"]
-            )
-            str_used = size2str(
-                dict_usage["used"], ansiescape_color=ANSI_COLORS["default"]
-            )
-            str_free = size2str(dict_usage["free"], ansiescape_color=color)
+            str_total = size2str(usage_info.total, ansi_color=AnsiColor.DEFAULT)
+            str_used = size2str(usage_info.used, ansi_color=AnsiColor.DEFAULT)
+            str_free = size2str(usage_info.free, ansi_color=color)
 
             usage_bar = wrap_string(
-                cli_bar(dict_usage["used"], dict_usage["total"], print_out=False),
+                cli_bar(usage_info.used, usage_info.total, print_out=False),
                 prefix=color,
             )
 
