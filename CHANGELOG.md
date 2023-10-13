@@ -1,6 +1,9 @@
 # CLIFS Changelog
 
-## Unreleased
+## Unreleased 
+
+
+## 0.5.0 - Oct. 13, 2023
 
 - Some refactoring:
   - use Counter class for all counters
