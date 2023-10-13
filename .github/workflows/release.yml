@@ -44,11 +44,11 @@ jobs:
           echo "bumping version: $VERSION → $NEW_VERSION"
           now=$(date +"%b. %d, %Y")
           [[ -f CHANGELOG.md ]] && \
-          sed -i "s/## Unreleased/## $NEW_VERSION - $now/" CHANGELOG.md
+          sed -i "s/## Unreleased/## v$NEW_VERSION - $now/" CHANGELOG.md
           [[ -f CHANGELOG.md ]] && sed -i '3i ## Unreleased \n\n' CHANGELOG.md
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add -A
           git commit -m "bump version: $VERSION → $NEW_VERSION"
-          git tag -a $NEW_VERSION -m "release $NEW_VERSION"
+          git tag -a "v$NEW_VERSION" -m "release v$NEW_VERSION"
           git push && git push --tags
