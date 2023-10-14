@@ -34,7 +34,14 @@ jobs:
 
       - name: check release requirements
         run: |
-          hatch version || { echo "no version info found with Hatch, exiting" && exit 1; }
+          # check that hatch can access the version
+          hatch version || 
+          { echo "no version info found with Hatch, exiting" && exit 1; }
+          # check for "## Unreleased Changes" section in changelog if it exists
+          [[ -f CHANGELOG.md ]] && 
+          { grep -q "## Unreleased Changes" CHANGELOG.md || 
+          { echo "Did not find '##Unreleased Changes' section in changelog. \
+          Please document your changes." && exit 1; }; }
 
       - name: Bump version and update changelog
         run: |
@@ -43,9 +50,15 @@ jobs:
           NEW_VERSION=`hatch version`
           echo "bumping version: $VERSION → $NEW_VERSION"
           now=$(date +"%b. %d, %Y")
-          [[ -f CHANGELOG.md ]] && \
-          sed -i "s/## Unreleased/## v$NEW_VERSION - $now/" CHANGELOG.md
-          [[ -f CHANGELOG.md ]] && sed -i '3i ## Unreleased \n\n' CHANGELOG.md
+          # check that the new version is not already documented in the changelog
+          [[ -f CHANGELOG.md ]] &&
+          { grep -q "## v$NEW_VERSION" CHANGELOG.md && 
+          { echo "Version 'v$NEW_VERSION' is already documented in CHANGELOG.md. \
+          Please dont add versions manually but use '## Unreleased Changes' header." && 
+          exit 1; }; }
+          [[ -f CHANGELOG.md ]] && 
+          sed -i "s/## Unreleased Changes/## v$NEW_VERSION - $now/" CHANGELOG.md
+          [[ -f CHANGELOG.md ]] && sed -i '3i ## Unreleased Changes \n\n' CHANGELOG.md
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add -A
