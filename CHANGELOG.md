@@ -1,7 +1,8 @@
-# CLIFS Changelog
+# clifs Changelog
 
-## Unreleased 
+## Unreleased Changes
 
+- add mor thorough checks to release pipeline
 
 ## 0.5.0 - Oct. 13, 2023
 
