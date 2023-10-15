@@ -44,7 +44,8 @@ dependencies = [
     "clifs @ file://{root}",
 ]
 [tool.hatch.envs.default.scripts]
-test = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=clifs {args}"
+test = """pytest -v --cov-report=term-missing \
+ --cov-config=pyproject.toml --cov=clifs {args}"""
 lint = [
     "pflake8 .",
     "black --check .",
@@ -52,7 +53,6 @@ lint = [
     "pylint clifs",
     "mypy clifs",
 ]
-
 
 [tool.isort]
 profile = "black"

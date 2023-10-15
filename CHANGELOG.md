@@ -2,7 +2,10 @@
 
 ## Unreleased Changes
 
-- add mor thorough checks to release pipeline
+- CI:
+  - add more thorough checks on release requirements to release pipeline
+  - run testing and linting via Hatch
+  - update version of checkout and setup-python actions
 
 ## 0.5.0 - Oct. 13, 2023
 
