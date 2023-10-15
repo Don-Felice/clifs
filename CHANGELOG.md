@@ -1,7 +1,12 @@
-# CLIFS Changelog
+# clifs Changelog
 
-## Unreleased 
+## Unreleased Changes
 
+- update pylint to v3.0.1
+- CI:
+  - add more thorough checks on release requirements to release pipeline
+  - run testing and linting via Hatch
+  - update version of checkout and setup-python actions
 
 ## 0.5.0 - Oct. 13, 2023
 
