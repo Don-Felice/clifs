@@ -1,6 +1,9 @@
 # clifs Changelog
 
-## Unreleased Changes
+## Unreleased Changes 
+
+
+## v0.5.1 - Oct. 15, 2023
 
 - update pylint to v3.0.1
 - CI:
