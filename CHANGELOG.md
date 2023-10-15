@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 
+- update pylint to v3.0.1
 - CI:
   - add more thorough checks on release requirements to release pipeline
   - run testing and linting via Hatch

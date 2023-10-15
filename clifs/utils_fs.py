@@ -191,7 +191,7 @@ def _print_rename_message(
         cli_bar(num_file, num_files_all, suffix=space_prefix + message)
 
 
-def como(
+def como(  # pylint: disable=too-many-arguments
     dir_source: Path,
     dir_dest: Path,
     *,
