@@ -8,7 +8,7 @@ from collections import Counter
 from pathlib import Path
 from typing import List, NamedTuple, Optional, Tuple
 
-from clifs.clifs_plugin import ClifsPlugin
+from clifs import ClifsPlugin
 from clifs.utils_cli import cli_bar
 
 

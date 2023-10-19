@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import Dict, List, NamedTuple
 
-from clifs.clifs_plugin import ClifsPlugin
+from clifs import ClifsPlugin
 from clifs.utils_cli import AnsiColor, cli_bar, size2str, wrap_string
 
 
