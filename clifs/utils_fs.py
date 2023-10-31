@@ -50,10 +50,11 @@ class FileGetterMixin:
             "--filterlist",
             default=None,
             type=Path,
-            help="Path to a txt or csv file containing a list of files to copy/move."
-            "In case of a CSV, separator and header can be provided additionally. "
-            "If no header is provided, "
-            "each line in the file is read as individual item name.",
+            help="Path to a txt or csv file containing a list of files to process. "
+            "In case of a CSV, separator and header can be provided additionally via "
+            "the parameters `filterlistsep` and `filterlistheader`. "
+            "If no header is provided, each line in the file is treated as individual "
+            "file name.",
         )
         parser.add_argument(
             "-flh",
@@ -270,7 +271,7 @@ def como(  # pylint: disable=too-many-arguments
 
 def rename_files(
     files2process: List[Path],
-    re_pattern: str,
+    pattern: str,
     replacement: str,
     *,
     preview_mode: bool = True,
@@ -286,7 +287,7 @@ def rename_files(
     num_file = 0
     for num_file, path_file in enumerate(files2process, 1):
         name_old = path_file.name
-        name_new = re.sub(re_pattern, replacement, name_old)
+        name_new = re.sub(pattern, replacement, name_old)
         message_rename = f"{name_old:35} -> {name_new:35}"
 
         # skip files if renaming would result in bad characters
@@ -318,8 +319,8 @@ def rename_files(
             name_new = path_file_unique.name
             message_rename = f"{name_old:35} -> {name_new:35}"
             message_rename += wrap_string(
-                f"{INDENT}Warning: resulting name would already be present in folder. "
-                "Will add numbering suffix.",
+                f"{INDENT}Warning: name result would already exist. "
+                "Adding number suffix.",
                 AnsiColor.YELLOW,
             )
             counter["name_conflicts"] += 1

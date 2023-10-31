@@ -93,17 +93,17 @@ class FileSaver(ClifsPlugin):
         """
 
         parser.add_argument(
-            "-s", "--dir_source", type=Path, default=None, help="source directory"
+            "-s", "--dir_source", type=Path, default=None, help="Source directory"
         )
         parser.add_argument(
-            "-d", "--dir_dest", type=Path, default=None, help="destination directory"
+            "-d", "--dir_dest", type=Path, default=None, help="Destination directory"
         )
         parser.add_argument(
             "-cfg",
             "--cfg_file",
             type=Path,
             default=None,
-            help="path to the config file",
+            help="Path to the config file",
         )
         parser.add_argument(
             "-del",
@@ -111,7 +111,7 @@ class FileSaver(ClifsPlugin):
             action="store_true",
             default=False,
             help=(
-                "delete files which exist in destination directory but not in"
+                "Delete files which exist in destination directory but not in "
                 "the source directory"
             ),
         )
@@ -120,7 +120,7 @@ class FileSaver(ClifsPlugin):
             "--dry_run",
             action="store_true",
             default=False,
-            help="Do not touch anything",
+            help="Do not touch anything.",
         )
 
     def __init__(self, args: Namespace) -> None:

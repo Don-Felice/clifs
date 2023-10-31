@@ -8,12 +8,17 @@ dev-mode-dirs = ["."]
 [project]
 name = "clifs"
 description = "Command line interface for basic file system operations."
+readme = "README.md"
 authors = [{ email = "don.felice@gmx.net", name = "Felix Segerer" }]
-license = { text = "GNU GENERAL PUBLIC LICENSE" }
+license-files = { paths = ["LICENSE"] }
 classifiers = ["Programming Language :: Python :: 3"]
+keywords = ["file system", "command line"]
 dependencies = ["colorama>=0.4.3"]
 dynamic = ["version"]
+requires-python = ">=3.8"
 
+[project.urls]
+"Source code" = "https://github.com/Don-Felice/clifs"
 
 [tool.hatch.version]
 path = "clifs/VERSION"
@@ -25,8 +30,8 @@ clifs = "clifs.__main__:main"
 [project.entry-points."clifs.plugins"]
 tree = "clifs.plugins.tree:DirectoryTree"
 du = "clifs.plugins.disc_usage:DiscUsageExplorer"
-copy = "clifs.plugins.como:FileCopier"
-move = "clifs.plugins.como:FileMover"
+cp = "clifs.plugins.como:FileCopier"
+mv = "clifs.plugins.como:FileMover"
 del = "clifs.plugins.delete:FileDeleter"
 ren = "clifs.plugins.rename:FileRenamer"
 backup = "clifs.plugins.backup.backup:FileSaver"

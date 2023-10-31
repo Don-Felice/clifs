@@ -15,8 +15,8 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
     Regex-based file renaming.
     """
 
-    re_pattern: str
-    substitute: str
+    pattern: str
+    replacement: str
     skip_preview: bool
 
     @classmethod
@@ -28,20 +28,20 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
         super().init_parser_mixin(parser)
 
         parser.add_argument(
-            "-re",
-            "--re_pattern",
+            "-pt",
+            "--pattern",
             default=".*",
             help="Pattern identifying the substring to be replaced. "
-            "Supports syntax from regex module "
+            "Supports syntax for `re.sub` from regex module "
             "(https://docs.python.org/3/library/re.html).",
         )
         parser.add_argument(
-            "-s",
-            "--substitute",
+            "-rp",
+            "--replacement",
             default="",
             help="String to use as replacement. "
             "You can use \\1 \\2 etc. to refer to matching groups. "
-            "A pattern like '(.+)\\.(.+)' in combination "
+            "E.g. a pattern like '(.+)\\.(.+)' in combination "
             "with a replacement like '\\1_suffix.\\2' will append suffixes. "
             "Defaults to empty string.",
         )
@@ -63,8 +63,8 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
         if not self.skip_preview:
             rename_files(
                 self.files2process,
-                self.re_pattern,
-                self.substitute,
+                self.pattern,
+                self.replacement,
                 preview_mode=True,
             )
             if not user_query(
@@ -75,7 +75,7 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
 
         rename_files(
             self.files2process,
-            self.re_pattern,
-            self.substitute,
+            self.pattern,
+            self.replacement,
             preview_mode=False,
         )

@@ -59,7 +59,7 @@ class DiscUsageExplorer(ClifsPlugin):
             print(
                 name_dir + "    " + wrap_string(f"({path_dir})", prefix=AnsiColor.GRAY)
             )
-            if frac_used := (usage_info.used / usage_info.total) <= 0.7:
+            if (frac_used := usage_info.used / usage_info.total) <= 0.7:
                 color = AnsiColor.DEFAULT
             elif frac_used <= 0.9:
                 color = AnsiColor.YELLOW
