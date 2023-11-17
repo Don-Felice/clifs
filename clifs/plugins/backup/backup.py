@@ -8,8 +8,8 @@ from collections import Counter
 from pathlib import Path
 from typing import List, NamedTuple, Optional, Tuple
 
-from clifs.clifs_plugin import ClifsPlugin
-from clifs.utils_cli import cli_bar
+from clifs import ClifsPlugin
+from clifs.utils_cli import cli_bar, print_line
 
 
 class DirPair(NamedTuple):
@@ -21,7 +21,7 @@ class DirPair(NamedTuple):
 
 def conditional_copy(path_source: Path, path_dest: Path, dry_run: bool = False) -> int:
     """
-    Copy only if dest file does not exist or is older than the souce file.
+    Copy only if dest file does not exist or is older than the source file.
     """
     process = None
     if not path_dest.exists():
@@ -93,17 +93,17 @@ class FileSaver(ClifsPlugin):
         """
 
         parser.add_argument(
-            "-s", "--dir_source", type=Path, default=None, help="source directory"
+            "-s", "--dir_source", type=Path, default=None, help="Source directory"
         )
         parser.add_argument(
-            "-d", "--dir_dest", type=Path, default=None, help="destination directory"
+            "-d", "--dir_dest", type=Path, default=None, help="Destination directory"
         )
         parser.add_argument(
             "-cfg",
             "--cfg_file",
             type=Path,
             default=None,
-            help="path to the config file",
+            help="Path to the config file",
         )
         parser.add_argument(
             "-del",
@@ -111,7 +111,7 @@ class FileSaver(ClifsPlugin):
             action="store_true",
             default=False,
             help=(
-                "delete files which exist in destination directory but not in"
+                "Delete files which exist in destination directory but not in "
                 "the source directory"
             ),
         )
@@ -120,7 +120,7 @@ class FileSaver(ClifsPlugin):
             "--dry_run",
             action="store_true",
             default=False,
-            help="Do not touch anything",
+            help="Do not touch anything.",
         )
 
     def __init__(self, args: Namespace) -> None:
@@ -159,7 +159,6 @@ class FileSaver(ClifsPlugin):
         time_start = time.time()
 
         for dir_pair in self.dir_pairs:
-            print(f"Backing up files in {dir_pair.source} in {dir_pair.dest}.")
             self.backup_dir(
                 dir_pair.source, dir_pair.dest, delete=self.delete, dry_run=self.dry_run
             )
@@ -174,8 +173,8 @@ class FileSaver(ClifsPlugin):
         delete: bool = False,
         dry_run: bool = False,
     ) -> None:
-        print(f"Backing up files in {dir_source} to {dir_dest}.")
-
+        print(f"Backing up files from:\n{dir_source}\nin:\n{dir_dest}.")
+        print_line()
         list_files_source, list_dirs_source = list_filedirs(dir_source)
         # initialize stats
         counter = Counter(checked=len(list_files_source))
@@ -187,9 +186,10 @@ class FileSaver(ClifsPlugin):
                 dry_run=dry_run,
             )
             cli_bar(cur_num_file, counter["checked"], suffix="of files checked")
-
+        print_line()
         if delete:
             print("All files stored, checking for files to delete now.")
+            print_line()
             list_files_dest, list_dirs_dest = list_filedirs(dir_dest)
 
             num_dest = len(list_files_dest)
@@ -209,6 +209,7 @@ class FileSaver(ClifsPlugin):
                     list_dirs_source,
                     dry_run=dry_run,
                 )
+            print_line()
 
         print(
             f"\nStored {counter['copied']} files out of {counter['checked']} from "

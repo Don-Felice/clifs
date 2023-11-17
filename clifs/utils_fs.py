@@ -10,7 +10,6 @@ from argparse import ArgumentParser
 from collections import Counter
 from pathlib import Path
 from typing import List, Optional, Set
-from warnings import warn
 
 from clifs.utils_cli import AnsiColor, cli_bar, print_line, wrap_string
 
@@ -50,10 +49,11 @@ class FileGetterMixin:
             "--filterlist",
             default=None,
             type=Path,
-            help="Path to a txt or csv file containing a list of files to copy/move."
-            "In case of a CSV, separator and header can be provided additionally. "
-            "If no header is provided, "
-            "each line in the file is read as individual item name.",
+            help="Path to a txt or csv file containing a list of files to process. "
+            "In case of a CSV, separator and header can be provided additionally via "
+            "the parameters `filterlistsep` and `filterlistheader`. "
+            "If no header is provided, each line in the file is treated as individual "
+            "file name.",
         )
         parser.add_argument(
             "-flh",
@@ -211,7 +211,7 @@ def como(  # pylint: disable=too-many-arguments
 
     str_process = "moving" if move else "copying"
     print(
-        f"Will start {str_process} {len(files2process)} files from:"
+        f"{str_process} {len(files2process)} files from:"
         f"\n{dir_source}"
         f"\nto"
         f"\n{dir_dest}"
@@ -270,7 +270,7 @@ def como(  # pylint: disable=too-many-arguments
 
 def rename_files(
     files2process: List[Path],
-    re_pattern: str,
+    pattern: str,
     replacement: str,
     *,
     preview_mode: bool = True,
@@ -286,7 +286,7 @@ def rename_files(
     num_file = 0
     for num_file, path_file in enumerate(files2process, 1):
         name_old = path_file.name
-        name_new = re.sub(re_pattern, replacement, name_old)
+        name_new = re.sub(pattern, replacement, name_old)
         message_rename = f"{name_old:35} -> {name_new:35}"
 
         # skip files if renaming would result in bad characters
@@ -318,8 +318,8 @@ def rename_files(
             name_new = path_file_unique.name
             message_rename = f"{name_old:35} -> {name_new:35}"
             message_rename += wrap_string(
-                f"{INDENT}Warning: resulting name would already be present in folder. "
-                "Will add numbering suffix.",
+                f"{INDENT}Warning: name result would already exist. "
+                "Adding number suffix.",
                 AnsiColor.YELLOW,
             )
             counter["name_conflicts"] += 1
@@ -351,23 +351,29 @@ def rename_files(
             files_to_be_deleted.add(path_file)
 
     if counter["bad_results"] > 0:
-        warn(
-            f"{counter['bad_results']} out of {counter['files2process']} "
-            f"files not renamed as it would result in bad characters."
+        print(
+            wrap_string(
+                f"Warning: {counter['bad_results']} out of {counter['files2process']} "
+                f"files not renamed as it would result in bad characters.",
+            )
         )
 
     if counter["name_conflicts"] > 0:
-        warn(
-            f"{counter['name_conflicts']} out of {counter['files2process']} "
-            "renamings would have resulted in name conflicts. "
-            "Added numbering suffices to get unique names."
+        print(
+            wrap_string(
+                f"Warning: {counter['name_conflicts']} out of "
+                f"{counter['files2process']} renamings would have resulted in name "
+                "conflicts. Added numbering suffices to get unique names.",
+                AnsiColor.YELLOW,
+            )
         )
 
     print_line()
     if not preview_mode:
         print(
             f"Hurray, {num_file} files have been processed, "
-            f"{counter['files_renamed']} have been renamed."
+            f"{counter['files_renamed']} have been renamed.",
+            AnsiColor.YELLOW,
         )
 
 

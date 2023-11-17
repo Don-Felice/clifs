@@ -30,7 +30,7 @@ def test_copy(
     for idx_dir in range(n_test_dirs):
         patch_args = [
             "clifs",
-            "copy",
+            "cp",
             str(dirs_source[idx_dir]),
             str(dirs_empty[idx_dir] if flatten else dirs_dest[idx_dir]),
             "--recursive",
@@ -116,7 +116,7 @@ def test_move(
     for idx_dir in range(n_test_dirs):
         patch_args = [
             "clifs",
-            "move",
+            "mv",
             str(dirs_source[idx_dir]),
             str(dirs_empty[idx_dir] if flatten else dirs_dest[idx_dir]),
             "--recursive",

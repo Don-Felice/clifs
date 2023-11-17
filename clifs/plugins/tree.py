@@ -5,7 +5,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import List, Optional
 
-from clifs.clifs_plugin import ClifsPlugin
+from clifs import ClifsPlugin
 from clifs.utils_cli import AnsiColor, size2str, wrap_string
 
 PIPE = "│"

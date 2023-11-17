@@ -5,7 +5,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from typing import List
 
-from clifs.clifs_plugin import ClifsPlugin
+from clifs import ClifsPlugin
 from clifs.utils_cli import user_query
 from clifs.utils_fs import FileGetterMixin, delete_files
 
