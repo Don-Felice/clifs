@@ -1,7 +1,11 @@
 # clifs Changelog
 
-## Unreleased Changes 
+## Unreleased Changes
 
+- more concise naming of cli arguments
+- more concise reporting
+- documentation of plugin feature and included plugins in the README.md
+- make `clifs.ClifsPlugin` directly importable from top level
 
 ## v0.5.1 - Oct. 15, 2023
 
@@ -11,14 +15,14 @@
   - run testing and linting via Hatch
   - update version of checkout and setup-python actions
 
-## 0.5.0 - Oct. 13, 2023
+## v0.5.0 - Oct. 13, 2023
 
 - Some refactoring:
   - use Counter class for all counters
   - use Enum class for storage of color constants
   - some other minor refactors
 
-## 0.4.2 - Oct. 13, 2023
+## v0.4.2 - Oct. 13, 2023
 
 - add CI release pipeline
 - add CHANGELOG.md
