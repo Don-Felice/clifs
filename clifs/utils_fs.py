@@ -10,7 +10,6 @@ from argparse import ArgumentParser
 from collections import Counter
 from pathlib import Path
 from typing import List, Optional, Set
-from warnings import warn
 
 from clifs.utils_cli import AnsiColor, cli_bar, print_line, wrap_string
 
@@ -212,7 +211,7 @@ def como(  # pylint: disable=too-many-arguments
 
     str_process = "moving" if move else "copying"
     print(
-        f"Will start {str_process} {len(files2process)} files from:"
+        f"{str_process} {len(files2process)} files from:"
         f"\n{dir_source}"
         f"\nto"
         f"\n{dir_dest}"
@@ -352,23 +351,29 @@ def rename_files(
             files_to_be_deleted.add(path_file)
 
     if counter["bad_results"] > 0:
-        warn(
-            f"{counter['bad_results']} out of {counter['files2process']} "
-            f"files not renamed as it would result in bad characters."
+        print(
+            wrap_string(
+                f"Warning: {counter['bad_results']} out of {counter['files2process']} "
+                f"files not renamed as it would result in bad characters.",
+            )
         )
 
     if counter["name_conflicts"] > 0:
-        warn(
-            f"{counter['name_conflicts']} out of {counter['files2process']} "
-            "renamings would have resulted in name conflicts. "
-            "Added numbering suffices to get unique names."
+        print(
+            wrap_string(
+                f"Warning: {counter['name_conflicts']} out of "
+                f"{counter['files2process']} renamings would have resulted in name "
+                "conflicts. Added numbering suffices to get unique names.",
+                AnsiColor.YELLOW,
+            )
         )
 
     print_line()
     if not preview_mode:
         print(
             f"Hurray, {num_file} files have been processed, "
-            f"{counter['files_renamed']} have been renamed."
+            f"{counter['files_renamed']} have been renamed.",
+            AnsiColor.YELLOW,
         )
 
 
