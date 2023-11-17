@@ -1,6 +1,9 @@
 # clifs Changelog
 
-## Unreleased Changes
+## Unreleased Changes 
+
+
+## v1.0.0 - Nov. 17, 2023
 
 - more concise naming of cli arguments
 - more concise reporting
