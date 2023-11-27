@@ -17,6 +17,8 @@ jobs:
   Release:
     runs-on: ubuntu-latest
     if: ${{ always() && format('refs/heads/{0}', github.event.repository.default_branch) == github.ref }}
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4.0.0
@@ -32,7 +34,7 @@ jobs:
           python -m pip install --upgrade pip 
           pip install hatch
 
-      - name: check release requirements
+      - name: Check release requirements
         run: |
           # check that hatch can access the version
           hatch version || 
@@ -68,3 +70,14 @@ jobs:
           git commit -m "bump version: $VERSION → $NEW_VERSION"
           git tag -a "v$NEW_VERSION" -m "release v$NEW_VERSION"
           git push && git push --tags
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_VERSION=`hatch version`
+          TAG = "v$NEW_VERSION"
+          gh release create "$TAG" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${TAG}" \
+              --generate-notes \
+              --verify-tag
