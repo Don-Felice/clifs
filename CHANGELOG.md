@@ -1,7 +1,9 @@
 # clifs Changelog
 
-## Unreleased Changes 
+## Unreleased Changes
 
+- add 'build_and_publish.yml' workflow for automated publishing on PyPI
+- make image links in README.md refer to specific release tags instead of the main branch and update them automatically during release
 
 ## v1.0.0 - Nov. 17, 2023
 
