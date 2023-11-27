@@ -59,6 +59,9 @@ jobs:
           [[ -f CHANGELOG.md ]] && 
           sed -i "s/## Unreleased Changes/## v$NEW_VERSION - $now/" CHANGELOG.md
           [[ -f CHANGELOG.md ]] && sed -i '3i ## Unreleased Changes \n\n' CHANGELOG.md
+          # change image links in the readme
+          [[ -f README.md ]] && 
+          sed -i "/https:\/\/github.com/s/\/v$VERSION\//\/v$NEW_VERSION\//" README.md
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add -A
