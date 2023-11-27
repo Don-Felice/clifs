@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+- backup:
+  - nicer reporting using rich
+  - some refactoring
 - ci:
   - add creation of github release to release pipeline
   - add 'build_and_publish.yml' workflow for automated publishing on PyPI
