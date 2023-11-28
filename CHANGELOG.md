@@ -4,6 +4,7 @@
 
 - backup:
   - nicer reporting using rich
+  - add `--verbose` option to print all actions to stdout
   - some refactoring
 - ci:
   - add creation of github release to release pipeline

@@ -119,6 +119,7 @@ class FileSaver(ClifsPlugin):
     dir_dest: Path
     config_file: Path
     delete: bool
+    verbose: bool
     dry_run: bool
 
     @staticmethod
@@ -151,6 +152,13 @@ class FileSaver(ClifsPlugin):
             ),
         )
         parser.add_argument(
+            "-v",
+            "--verbose",
+            action="store_true",
+            default=False,
+            help="Report on every action to stdout.",
+        )
+        parser.add_argument(
             "-dr",
             "--dry_run",
             action="store_true",
@@ -163,6 +171,7 @@ class FileSaver(ClifsPlugin):
         self.dir_dest: Optional[Path] = args.dir_dest
         self.cfg_file: Optional[Path] = args.cfg_file
         self.delete: bool = args.delete
+        self.verbose: bool = args.verbose
         self.dry_run: bool = args.dry_run
 
         assert not (
@@ -205,7 +214,7 @@ class FileSaver(ClifsPlugin):
         dir_dest: Path,
     ) -> None:
         print_line()
-        print(f"Backing up files from:\n    {dir_source}\nin:\n    {dir_dest}.")
+        print(f"Backing up files \nfrom: {dir_source}\nto:   {dir_dest}")
 
         files_source, dirs_source = list_filedirs(dir_source)
         self.copy_data(
@@ -272,7 +281,7 @@ class FileSaver(ClifsPlugin):
                 padding=(1, 2),
             ),
         )
-        with Live(progress_table, refresh_per_second=5, console=CONSOLE):
+        with Live(progress_table, refresh_per_second=5, console=CONSOLE) as live:
             for cur_file in files_source:
                 progress["counts"].advance(tasks["count_files_found"])
                 action = conditional_copy(
@@ -289,6 +298,8 @@ class FileSaver(ClifsPlugin):
                         progress["counts"].advance(tasks["count_files_added"])
                     elif action == "updating":
                         progress["counts"].advance(tasks["count_files_updated"])
+                    if self.verbose:
+                        live.console.print(f"  - {action} [cyan]'{cur_file.name}'[/]")
                 else:
                     progress["counts"].advance(tasks["count_files_untouched"])
                 progress["overall"].advance(tasks["progress_backup"])
@@ -358,7 +369,7 @@ class FileSaver(ClifsPlugin):
             ),
         )
 
-        with Live(progress_table, refresh_per_second=5, console=CONSOLE):
+        with Live(progress_table, refresh_per_second=5, console=CONSOLE) as live:
             for cur_file_dest in files_dest:
                 progress["counts"].advance(tasks_delete["count_files_found"])
                 action = conditional_delete(
@@ -373,6 +384,11 @@ class FileSaver(ClifsPlugin):
                         tasks_delete["progress_delete_files"],
                         last_action=cur_file_dest.name,
                     )
+                    if self.verbose:
+                        live.console.print(
+                            f"  - deleting [magenta]'{cur_file_dest.name}'[/] from dest dir"
+                        )
+
                 progress["overall"].advance(tasks_delete["progress_delete_files"])
 
             for cur_dir_dest in dirs_dest:
@@ -389,4 +405,8 @@ class FileSaver(ClifsPlugin):
                         tasks_delete["progress_delete_folders"],
                         last_action=cur_dir_dest.name,
                     )
+                    if self.verbose:
+                        live.console.print(
+                            f"  - deleting dir [magenta]'{cur_file_dest.name}'[/] from dest dir"
+                        )
                 progress["overall"].advance(tasks_delete["progress_delete_folders"])
