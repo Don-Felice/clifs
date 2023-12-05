@@ -40,7 +40,7 @@ def test_file_getter(
         file_getter.filterlistsep = sep_filterlist
         file_getter.filterstring = filter_str
 
-        files_found = file_getter.get_files2process()
+        files_found = file_getter.get_files()
 
         pattern = f"*{filter_str}*" if filter_str else "*"
 

@@ -6,19 +6,16 @@ Main entry point
 import argparse
 import sys
 from importlib.metadata import entry_points
-
-import colorama  # type: ignore
+from typing import Dict, Type
 
 import clifs
-from clifs.utils_cli import AnsiColor, wrap_string
+from clifs import ClifsPlugin
+from clifs.utils_cli import CONSOLE, set_style
 
 
 def main() -> None:
-    colorama.init()  # allow for ansi escape sequences to have colorful cmd output
-    print(
-        wrap_string(
-            f"running `clifs` version: {clifs.__version__}", prefix=AnsiColor.GRAY
-        )
+    CONSOLE.print(
+        set_style(f"running `clifs` version: {clifs.__version__}", "bright_black")
     )
 
     parser = argparse.ArgumentParser(
@@ -26,7 +23,7 @@ def main() -> None:
     )
     commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
-    plugins = {}
+    plugins: Dict[str, Type[ClifsPlugin]] = {}
     for entry_point in entry_points()["clifs.plugins"]:
         plugins[entry_point.name] = entry_point.load()
         subparser = commands.add_parser(

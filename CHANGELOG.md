@@ -2,10 +2,17 @@
 
 ## Unreleased Changes
 
+- Use `rich` instead of `colorama` for colorful reporting
+- major refactoring
+- copy/move:
+  - nicer reporting using rich
+  - add `--terse` option to hide reporting of individual actions
 - backup:
   - nicer reporting using rich
   - add `--verbose` option to print all actions to stdout
-  - some refactoring
+  - move 'cfg_template.csv' to './doc/plugins/backup'
+- delete:
+  - more concise reporting
 - ci:
   - add creation of github release to release pipeline
   - add 'build_and_publish.yml' workflow for automated publishing on PyPI

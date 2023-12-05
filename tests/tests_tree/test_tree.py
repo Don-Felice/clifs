@@ -9,7 +9,7 @@ import pytest
 
 from clifs.__main__ import main
 from clifs.plugins.tree import DirectoryTree
-from tests.common.utils_testing import escape_ansi, parametrize_default_ids
+from tests.common.utils_testing import escape_rich_style, parametrize_default_ids
 
 
 @pytest.fixture()
@@ -84,7 +84,7 @@ def test_tree(dirs_source, trees_source_dir, dirs_only, hide_sizes, depth):
         act_tree = tree.__str__().splitlines()
         for lineidx, line in enumerate(act_tree):
             try:
-                assert escape_ansi(line) == exp_tree[lineidx].replace(
+                assert escape_rich_style(line) == exp_tree[lineidx].replace(
                     "\n", ""
                 ), f"Trees for {folder} are not identical."
             except AssertionError:

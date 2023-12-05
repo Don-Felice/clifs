@@ -3,7 +3,27 @@ Utilities for the command line interface
 """
 
 from enum import Enum
-from typing import Union
+from typing import Iterable, Optional
+
+from rich.console import Console, RenderableType
+from rich.progress import BarColumn, Progress, TaskProgressColumn, TimeRemainingColumn
+from rich.rule import Rule
+from rich.theme import Theme
+
+THEME_RICH = Theme(
+    {
+        "bar.complete": "default",
+        "bar.finished": "green",
+        "bar.back": "bright_black",
+        "progress.percentage": "default",
+        "progress.remaining": "bright_black",
+        "rule.line": "default",
+        "warning": "yellow",
+        "error": "red",
+        "folder": "yellow",
+    },
+)
+CONSOLE = Console(theme=THEME_RICH, highlight=False)
 
 
 class AnsiColor(str, Enum):
@@ -23,15 +43,31 @@ class AnsiColor(str, Enum):
         return self.value
 
 
-def wrap_string(
+def set_style(
     string: str,
-    prefix: Union[str, AnsiColor] = AnsiColor.RED,
-    suffix: Union[str, AnsiColor] = AnsiColor.DEFAULT,
+    style: str = "red",
 ) -> str:
-    return f"{prefix}{string}{suffix}"
+    if string.endswith("\\") and not string.endswith("\\\\"):
+        string += "\\"
+    return f"[{style}]{string}[/{style}]"
 
 
-def size2str(size: float, ansi_color: AnsiColor = AnsiColor.CYAN) -> str:
+class LastActionProgress(Progress):
+    """Progress showing the last action in a separate line."""
+
+    def get_renderables(self) -> Iterable[RenderableType]:
+        """Get a number of renderables for the progress display."""
+
+        table = self.make_tasks_table(self.tasks)
+        yield table
+        for task in self.tasks:
+            yield (
+                f"{task.fields.get('last_action_desc','Last action')}: "
+                f"{task.fields.get('last_action', '-')}"
+            )
+
+
+def size2str(size: float, color: str = "cyan") -> str:
     if size < 1024**2:
         unit = "KB"
         size = round(size / 1024, 2)
@@ -47,22 +83,26 @@ def size2str(size: float, ansi_color: AnsiColor = AnsiColor.CYAN) -> str:
     else:
         unit = "PB"
         size = round(size / 1024**5, 2)
-    return wrap_string(f"{size:7.2f} {unit}", prefix=ansi_color)
+    return f"[{color}]{size:7.2f} {unit}[/{color}]"
 
 
-def cli_bar(
+def cli_bar(  # pylint: disable=too-many-arguments
     status: int,
     total: int,
     suffix: str = "",
     print_out: bool = True,
     bar_len: int = 20,
+    console: Optional[Console] = None,
 ) -> str:
     filled_len = int(round(bar_len * status / float(total)))
     percents = round(100.0 * status / float(total), 1)
     res_bar = "█" * filled_len + "-" * (bar_len - filled_len)
     output = f"|{res_bar}| {percents:5}% {suffix}"
     if print_out:
-        print(output, flush=True)
+        if console:
+            console.print(output)
+        else:
+            print(output)
     return output
 
 
@@ -73,5 +113,21 @@ def user_query(message: str) -> bool:
     return choice in yes
 
 
-def print_line(length: int = 50) -> None:
-    print("—" * length)
+def print_line(console: Console = CONSOLE, title: str = "") -> None:
+    console.print(Rule(title=title, align="left"))
+
+
+def get_count_progress() -> Progress:
+    return Progress(
+        "{task.description}",
+        "{task.completed}",
+    )
+
+
+def get_last_action_progress() -> LastActionProgress:
+    return LastActionProgress(
+        "{task.description}",
+        BarColumn(),
+        TaskProgressColumn(),
+        TimeRemainingColumn(),
+    )
