@@ -56,7 +56,7 @@ lint = [
     "black --check .",
     "isort --check .",
     "pylint clifs",
-    "mypy clifs",
+    "mypy clifs --strict",
 ]
 
 [tool.isort]

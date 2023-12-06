@@ -16,6 +16,7 @@
 - ci:
   - add creation of github release to release pipeline
   - add 'build_and_publish.yml' workflow for automated publishing on PyPI
+  - run `mypy` in 'strict' mode
 - docs:
   - make image links in README.md refer to specific release tags instead of the main branch and update them automatically during release
 
