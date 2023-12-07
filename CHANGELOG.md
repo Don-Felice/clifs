@@ -2,6 +2,7 @@
 
 ## Unreleased Changes 
 
+- fix issue in release pipeline
 
 ## v1.1.0 - Dec. 07, 2023
 

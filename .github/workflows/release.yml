@@ -60,7 +60,7 @@ jobs:
           exit 1; }; }
           [[ -f CHANGELOG.md ]] && 
           sed -i "s/## Unreleased Changes/## v$NEW_VERSION - $now/" CHANGELOG.md
-          [[ -f CHANGELOG.md ]] && sed -i '3i ## Unreleased Changes \n\n' CHANGELOG.md
+          [[ -f CHANGELOG.md ]] && sed -i '3i ## Unreleased Changes\n\n' CHANGELOG.md
           # change image links in the readme
           [[ -f README.md ]] && 
           sed -i "/https:\/\/github.com/s/\/v$VERSION\//\/v$NEW_VERSION\//" README.md
@@ -75,7 +75,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           NEW_VERSION=`hatch version`
-          TAG = "v$NEW_VERSION"
+          TAG="v$NEW_VERSION"
           gh release create "$TAG" \
               --repo="$GITHUB_REPOSITORY" \
               --title="${TAG}" \
