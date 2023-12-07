@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 
+- fix issue in trigger of the publishing ci pipeline
 
 ## v1.1.1 - Dec. 07, 2023 
 
