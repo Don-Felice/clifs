@@ -1,13 +1,15 @@
 name: Build and Publish on PyPI
 
 on:
-  release:
-    types: [published]
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
 
 jobs:
   build:
     name: Build distribution
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
       - name: Checkout repository
