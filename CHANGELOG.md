@@ -1,6 +1,9 @@
 # clifs Changelog
 
-## Unreleased Changes
+## Unreleased Changes 
+
+
+## v1.1.0 - Dec. 07, 2023
 
 - Use `rich` instead of `colorama` for colorful reporting
 - major refactoring
