@@ -1,6 +1,9 @@
 # clifs Changelog
 
-## Unreleased Changes 
+## Unreleased Changes
+
+
+## v1.1.1 - Dec. 07, 2023 
 
 - fix issue in release pipeline
 
