@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
+import re
 import sys
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
+from collections import Counter
 from pathlib import Path
-from typing import List
+from typing import List, Set
 
 from clifs import ClifsPlugin
-from clifs.utils_cli import user_query
-from clifs.utils_fs import FileGetterMixin, rename_files
+from clifs.utils_cli import cli_bar, print_line, set_style, user_query
+from clifs.utils_fs import INDENT, FileGetterMixin, get_unique_path
 
 
 class FileRenamer(ClifsPlugin, FileGetterMixin):
@@ -53,29 +55,146 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
             "Only for the brave...",
         )
 
-    def __init__(self, args) -> None:
+    def __init__(self, args: Namespace) -> None:
         super().__init__(args)
-        self.files2process: List[Path] = self.get_files2process()
+        self.files2process: List[Path] = self.get_files()
+        self.counter = Counter(files2process=len(self.files2process))
 
     def run(self) -> None:
         self.exit_if_nothing_to_process(self.files2process)
 
         if not self.skip_preview:
-            rename_files(
-                self.files2process,
-                self.pattern,
-                self.replacement,
-                preview_mode=True,
-            )
+            self.rename_files(preview_mode=True)
             if not user_query(
                 'If you want to apply renaming, give me a "yes" or "y" now!'
             ):
-                print("Will not rename for now. See you soon.")
+                self.console.print("Will not rename for now. See you soon.")
                 sys.exit(0)
 
-        rename_files(
-            self.files2process,
-            self.pattern,
-            self.replacement,
-            preview_mode=False,
-        )
+        self.rename_files(preview_mode=False)
+
+    def rename_files(
+        self,
+        preview_mode: bool = True,
+    ) -> None:
+        self.console.print(f"Renaming {self.counter['files2process']} files.")
+        print_line(self.console)
+        files_to_be_added: Set[Path] = set()
+        files_to_be_deleted: Set[Path] = set()
+        if preview_mode:
+            self.console.print("Preview:")
+
+        num_file = 0
+        for num_file, path_file in enumerate(self.files2process, 1):
+            name_old = path_file.name
+            name_new = re.sub(self.pattern, self.replacement, name_old)
+            message_rename = f"{name_old:35} -> {name_new:35}"
+
+            # skip files if renaming would result in bad characters
+            found_bad_chars = self.find_bad_char(name_new)
+            if found_bad_chars:
+                message_rename += set_style(
+                    f"{INDENT}Error: not doing renaming as it would result "
+                    f"in bad characters: '{','.join(found_bad_chars)}'",
+                    "error",
+                )
+                self.counter["bad_results"] += 1
+                self.print_rename_message(
+                    message_rename,
+                    num_file,
+                    preview_mode=preview_mode,
+                )
+                continue
+
+            # make sure resulting paths are unique
+            path_file_new = path_file.parent / name_new
+            path_file_unique = get_unique_path(
+                path_file_new,
+                set_taken=files_to_be_added,
+                set_free=files_to_be_deleted | {path_file},
+            )
+
+            if path_file_new != path_file_unique:
+                path_file_new = path_file_unique
+                name_new = path_file_unique.name
+                message_rename = f"{name_old:35} -> {name_new:35}"
+                message_rename += set_style(
+                    f"{INDENT}Warning: name result would already exist. "
+                    "Adding number suffix.",
+                    "warning",
+                )
+                self.counter["name_conflicts"] += 1
+
+            # skip files that are not renamed
+            if path_file_new == path_file:
+                message_rename = set_style(message_rename, "bright_black")
+                self.print_rename_message(
+                    message_rename,
+                    num_file,
+                    preview_mode=preview_mode,
+                )
+                continue
+
+            self.print_rename_message(
+                message_rename,
+                num_file,
+                preview_mode=preview_mode,
+            )
+            if not preview_mode:
+                path_file.rename(path_file_new)
+                self.counter["files_renamed"] += 1
+            else:
+                files_to_be_added.add(path_file_new)
+                if path_file_new in files_to_be_deleted:
+                    files_to_be_deleted.remove(path_file_new)
+                files_to_be_deleted.add(path_file)
+
+        if self.counter["bad_results"] > 0:
+            self.console.print(
+                set_style(
+                    f"Warning: {self.counter['bad_results']} out of "
+                    f"{self.counter['files2process']} files not renamed as it would "
+                    "result in bad characters.",
+                    "warning",
+                )
+            )
+
+        if self.counter["name_conflicts"] > 0:
+            self.console.print(
+                set_style(
+                    f"Warning: {self.counter['name_conflicts']} out of "
+                    f"{self.counter['files2process']} renamings would have resulted in "
+                    "name conflicts. Added numbering suffices to get unique names.",
+                    "warning",
+                )
+            )
+
+        if not preview_mode:
+            self.console.print(
+                f"Hurray, {num_file} files have been processed, "
+                f"{self.counter['files_renamed']} have been renamed."
+            )
+        print_line(self.console)
+
+    def print_rename_message(
+        self,
+        message: str,
+        num_file: int,
+        preview_mode: bool = False,
+        space_prefix: str = "    ",
+    ) -> None:
+        if preview_mode:
+            self.console.print(space_prefix + message)
+        else:
+            cli_bar(
+                num_file,
+                self.counter["files2process"],
+                suffix=space_prefix + message,
+                console=self.console,
+            )
+
+    @staticmethod
+    def find_bad_char(string: str) -> List[str]:
+        """Check stings for characters causing problems in windows file system."""
+        bad_chars = r"~“#%&*:<>?/\{|}"
+        return [x for x in bad_chars if x in string]

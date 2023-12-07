@@ -2,12 +2,12 @@
 
 
 import shutil
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Dict, List, NamedTuple
 
 from clifs import ClifsPlugin
-from clifs.utils_cli import AnsiColor, cli_bar, size2str, wrap_string
+from clifs.utils_cli import cli_bar, set_style, size2str
 
 
 class UsageInfo(NamedTuple):
@@ -38,7 +38,7 @@ class DiscUsageExplorer(ClifsPlugin):
             help="Directory or directories do get info from.",
         )
 
-    def __init__(self, args) -> None:
+    def __init__(self, args: Namespace) -> None:
         super().__init__(args)
         self._dict_usage: Dict[str, UsageInfo] = self._get_usage_info()
 
@@ -52,32 +52,31 @@ class DiscUsageExplorer(ClifsPlugin):
         return disc_usage
 
     def _print_usage_info(self) -> None:
-        print("")
+        self.console.print()
         for directory, usage_info in self._dict_usage.items():
             name_dir = Path(directory).name if Path(directory).name != "" else directory
             path_dir = str(Path(directory).resolve())
-            print(
-                name_dir + "    " + wrap_string(f"({path_dir})", prefix=AnsiColor.GRAY)
+            self.console.print(
+                name_dir + "    " + set_style(f"({path_dir})", "bright_black")
             )
             if (frac_used := usage_info.used / usage_info.total) <= 0.7:
-                color = AnsiColor.DEFAULT
+                color = "default"
             elif frac_used <= 0.9:
-                color = AnsiColor.YELLOW
+                color = "yellow"
             else:
-                color = AnsiColor.RED
+                color = "red"
 
-            str_total = size2str(usage_info.total, ansi_color=AnsiColor.DEFAULT)
-            str_used = size2str(usage_info.used, ansi_color=AnsiColor.DEFAULT)
-            str_free = size2str(usage_info.free, ansi_color=color)
+            str_total = size2str(usage_info.total, color="default")
+            str_used = size2str(usage_info.used, color="default")
+            str_free = size2str(usage_info.free, color=color)
 
-            usage_bar = wrap_string(
-                cli_bar(usage_info.used, usage_info.total, print_out=False),
-                prefix=color,
+            usage_bar = set_style(
+                cli_bar(usage_info.used, usage_info.total, print_out=False), color
             )
 
-            print(
-                f"  └── {usage_bar}    "
-                f"total: {str_total}    "
-                f"used: {str_used}    "
-                f"free: {str_free}"
+            self.console.print(
+                f"  └── {usage_bar}"
+                f"    total: {str_total}"
+                f"    used: {str_used}"
+                f"    free: {str_free}"
             )

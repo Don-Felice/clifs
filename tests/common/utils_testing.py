@@ -22,6 +22,11 @@ def escape_ansi(string):
     return ansi_escape.sub("", string)
 
 
+def escape_rich_style(string):
+    style_escape = re.compile(r"(?<!\\)\[[^\]]*[^\\]\]")
+    return style_escape.sub("", string)
+
+
 def check_mtime_consistency(file1, file2):
     assert (
         abs(os.path.getmtime(file1) - os.path.getmtime(file2)) <= 1

@@ -1,4 +1,4 @@
-name: Build and Publish on PPI
+name: Build and Publish on PyPI
 
 on:
   release:

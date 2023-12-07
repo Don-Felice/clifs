@@ -125,7 +125,7 @@ Type `clifs backup --help` for a full list of options.
 Command:
 
 ```powershell
-clifs backup --dir_source ".\some_source_dir" --dir_dest ".\some_dest_dir" --delete
+clifs backup --dir_source ".\some_source_dir" --dir_dest ".\some_dest_dir" --delete --verbose
 ```
 
 Output:

@@ -2,8 +2,23 @@
 
 ## Unreleased Changes
 
-- add 'build_and_publish.yml' workflow for automated publishing on PyPI
-- make image links in README.md refer to specific release tags instead of the main branch and update them automatically during release
+- Use `rich` instead of `colorama` for colorful reporting
+- major refactoring
+- copy/move:
+  - nicer reporting using rich
+  - add `--terse` option to hide reporting of individual actions
+- backup:
+  - nicer reporting using rich
+  - add `--verbose` option to print all actions to stdout
+  - move 'cfg_template.csv' to './doc/plugins/backup'
+- delete:
+  - more concise reporting
+- ci:
+  - add creation of github release to release pipeline
+  - add 'build_and_publish.yml' workflow for automated publishing on PyPI
+  - run `mypy` in 'strict' mode
+- docs:
+  - make image links in README.md refer to specific release tags instead of the main branch and update them automatically during release
 
 ## v1.0.0 - Nov. 17, 2023
 

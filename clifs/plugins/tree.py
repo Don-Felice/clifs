@@ -3,10 +3,12 @@
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional
+
+from rich.console import Console
 
 from clifs import ClifsPlugin
-from clifs.utils_cli import AnsiColor, size2str, wrap_string
+from clifs.utils_cli import set_style, size2str
 
 PIPE = "│"
 ELBOW = "└──"
@@ -49,9 +51,9 @@ class Entry(ABC):
 
 
 class File(Entry):
-    """Representing files in a Diretory Tree"""
+    """Representing files in a Directory Tree"""
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.size: Optional[float] = self.get_size() if self.plot_size else None
 
@@ -73,21 +75,21 @@ class File(Entry):
 
 class Folder(Entry):
     """
-    Reprensenting folders in a DirectoryTree.
+    Representing folders in a DirectoryTree.
     """
 
     def __init__(
         self,
         dirs_only: bool = False,
         depth_th: Optional[int] = None,
-        folder_color: AnsiColor = AnsiColor.YELLOW,
-        **kwargs,
+        console: Console = Console(),
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
         self.dirs_only = dirs_only
         self.depth_th = depth_th
-        self.folder_color = folder_color
+        self.console = console
 
         self.have_access: bool = True
         self.children: List[Entry] = []
@@ -138,14 +140,14 @@ class Folder(Entry):
             return children
 
         except PermissionError as err:
-            print(
-                wrap_string(
-                    f'Warning: no permission to access "{self.path}". '
-                    f"Size calculations of parent directories could be off.",
-                    prefix=AnsiColor.RED,
+            self.console.print(
+                set_style(
+                    f'Error: no permission to access "{self.path}". '
+                    "Size calculations of parent directories could be off.",
+                    "error",
                 )
             )
-            print(wrap_string(f'Error message: "{err}"', prefix=AnsiColor.RED))
+            self.console.print(set_style(f'Error message: "{err}"', "error"))
             self.have_access = False
             return []
 
@@ -159,12 +161,12 @@ class Folder(Entry):
 
     def __str__(self) -> str:
         string = f"{self.prefix}{self.connector} " if self.depth != 0 else ""
-        string += wrap_string(self.name, prefix=self.folder_color)
+        string += set_style(self.name, "folder")
 
         if self.plot_size and self.size is not None:
             string += SPACE_SIZE + size2str(self.size)
         elif not self.have_access:
-            string += SPACE_SIZE + wrap_string("no access", prefix=AnsiColor.RED)
+            string += SPACE_SIZE + set_style("no access", "error")
 
         if (self.depth_th is None or self.depth < self.depth_th) and self.children:
             if self.dirs_only:
@@ -231,10 +233,14 @@ class DirectoryTree(ClifsPlugin):
             plot_size=not self.hide_sizes,
             depth_th=self.depth,
             dirs_only=self.dirs_only,
+            console=self.console,
         )
 
     def __str__(self) -> str:
         return self.dir.__str__()
 
+    def __rich__(self) -> str:
+        return self.dir.__str__()
+
     def run(self) -> None:
-        print(self)
+        self.console.print(self, highlight=False)
