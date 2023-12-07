@@ -1,6 +1,4 @@
-"""
-Utilities for the file system
-"""
+"""Utilities for the file system"""
 
 import csv
 import re
@@ -74,6 +72,7 @@ class FileGetterMixin:
         )
 
     def get_files(self) -> List[Path]:
+        """Get file paths."""
         files2process = self._get_files_by_filterstring(
             self.dir_source, filterstring=self.filterstring, recursive=self.recursive
         )
@@ -85,6 +84,7 @@ class FileGetterMixin:
 
     @staticmethod
     def exit_if_nothing_to_process(files2process: List[Any]) -> None:
+        """Exit running process if list of files to process is empty"""
         if not files2process:
             print("Nothing to process.")
             sys.exit(0)
@@ -93,6 +93,14 @@ class FileGetterMixin:
     def _get_files_by_filterstring(
         dir_source: Path, filterstring: Optional[str] = None, recursive: bool = False
     ) -> List[Path]:
+        """Get files by substring filter on the file name.
+
+        :param dir_source: directory to search for files in
+        :param filterstring: Substring that must be included in a file name.
+            If set to None, files are not filtered by substring. Defaults to None.
+        :param recursive: Search recursively, defaults to False
+        :return: List of file paths matching the filter
+        """
         pattern_search = f"*{filterstring}*" if filterstring else "*"
         if recursive:
             pattern_search = "**/" + pattern_search
@@ -127,6 +135,18 @@ def get_unique_path(
     set_taken: Optional[Set[Path]] = None,
     set_free: Optional[Set[Path]] = None,
 ) -> Path:
+    """Given a name candidate get a unique file name in a given directory.
+
+    Adds number suffixes in form ' (#)' if file name is already taken.
+
+    :param path_candidate: Candidate for a file path.
+    :param set_taken: Optional set of additional paths which are considered as already
+        taken, defaults to None
+    :param set_free: Optional sets of paths that are considered as not taken even if
+        corresponding files exist, defaults to None
+    :raises ValueError: If there are common elements in 'set_taken' and 'set_free'
+    :return: Unique file path
+    """
     if set_taken is None:
         set_taken = set()
     if set_free is None:

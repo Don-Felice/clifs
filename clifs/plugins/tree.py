@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Clifs plugin to show directory trees"""
 
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace

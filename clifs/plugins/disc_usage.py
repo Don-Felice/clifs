@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Clifs plugin to show disc usage"""
 
 
 import shutil
