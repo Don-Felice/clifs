@@ -1,3 +1,5 @@
+"""Command line interface for the file system."""
+
 import importlib.metadata
 from pathlib import Path
 

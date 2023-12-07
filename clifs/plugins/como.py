@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Clifs plugins for file copying and moving"""
 
 import shutil
 from argparse import ArgumentParser, Namespace

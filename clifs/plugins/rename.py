@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Clifs plugin for regex-based file renaming"""
 
 import re
 import sys

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Clifs plugin to create data backups"""
 
 import csv
 import shutil

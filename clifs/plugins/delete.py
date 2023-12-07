@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Clifs plugin for file deletion"""
 
 import sys
 from argparse import ArgumentParser, Namespace

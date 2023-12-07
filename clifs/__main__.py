@@ -1,6 +1,4 @@
-"""
-Main entry point
-"""
+"""Main entry point calling plugins"""
 
 
 import argparse
@@ -14,6 +12,7 @@ from clifs.utils_cli import CONSOLE, set_style
 
 
 def main() -> None:
+    """Main entry point calling plugins installed as 'clifs.plugins'"""
     CONSOLE.print(
         set_style(f"running `clifs` version: {clifs.__version__}", "bright_black")
     )

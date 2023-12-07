@@ -1,6 +1,4 @@
-"""
-Definition of the ClifsPlugin interface
-"""
+"""Definition of the ClifsPlugin interface"""
 
 
 from abc import ABC, abstractmethod
