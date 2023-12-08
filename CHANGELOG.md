@@ -2,12 +2,13 @@
 
 ## Unreleased Changes
 
+- small refactors and rewording
 
 ## v1.1.2 - Dec. 07, 2023
 
 - fix issue in trigger of the publishing ci pipeline
 
-## v1.1.1 - Dec. 07, 2023 
+## v1.1.1 - Dec. 07, 2023
 
 - fix issue in release pipeline
 

@@ -119,8 +119,7 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
                 name_new = path_file_unique.name
                 message_rename = f"{name_old:35} -> {name_new:35}"
                 message_rename += set_style(
-                    f"{INDENT}Warning: name result would already exist. "
-                    "Adding number suffix.",
+                    f"{INDENT}Warning: name already exists. Adding number suffix.",
                     "warning",
                 )
                 self.counter["name_conflicts"] += 1
@@ -164,7 +163,7 @@ class FileRenamer(ClifsPlugin, FileGetterMixin):
                 set_style(
                     f"Warning: {self.counter['name_conflicts']} out of "
                     f"{self.counter['files2process']} renamings would have resulted in "
-                    "name conflicts. Added numbering suffices to get unique names.",
+                    "name conflicts. Added numbering suffixes to get unique names.",
                     "warning",
                 )
             )

@@ -90,7 +90,7 @@ class CoMo(ClifsPlugin, FileGetterMixin):
             "counts": get_count_progress(),
             "overall": get_last_action_progress(),
         }
-
+        self.action = "Moving" if self.move else "Copying"
         self.tasks = self.get_tasks()
 
         self.progress_table = Table.grid()
@@ -118,7 +118,7 @@ class CoMo(ClifsPlugin, FileGetterMixin):
         # define overall progress task
         tasks = {
             "progress": self.progress["overall"].add_task(
-                "Storing data:  ", total=len(self.files2process), last_action="-"
+                f"{self.action} data:  ", total=len(self.files2process), last_action="-"
             ),
         }
 
@@ -148,9 +148,8 @@ class CoMo(ClifsPlugin, FileGetterMixin):
 
     def como(self) -> None:
         print_line(self.console)
-        action = "moving" if self.move else "copying"
         self.console.print(
-            f"{action} {len(self.files2process)} files\n"
+            f"{self.action} {len(self.files2process)} files\n"
             f"from: {self.dir_source}\n"
             f"to:   {self.dir_dest}"
         )
@@ -199,17 +198,17 @@ class CoMo(ClifsPlugin, FileGetterMixin):
                         shutil.copy2(str(file), str(filepath_dest))
                         self.progress["counts"].advance(self.tasks["files_copied"])
 
-                action = "moved" if self.move else "copied"
+                last_action = "moved" if self.move else "copied"
                 if not self.terse:
                     cli_bar(
                         num_file,
                         len(self.files2process),
-                        suffix=f"{action}. {txt_report}",
+                        suffix=f"{last_action}. {txt_report}",
                         console=self.console,
                     )
                 self.progress["overall"].update(
                     self.tasks["progress"],
-                    last_action=f"{action} {file.name}",
+                    last_action=f"{last_action} {file.name}",
                 )
                 self.progress["overall"].advance(self.tasks["progress"])
                 live.refresh()
