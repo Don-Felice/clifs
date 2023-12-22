@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+
+## v1.2.0 - Dec. 22, 2023
+
 - refactors and rewording
 - `rename`:
   - add `--dirs` option to rename directories instead of files
