@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Test the disc usage plugin"""
 
 
 import re

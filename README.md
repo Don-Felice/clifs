@@ -19,7 +19,7 @@ To implement your own plugin best inherit from the `clifs.ClifsPlugin` class.
 
 ## Rename (`ren`)
 
-Rename files using regular expressions. Supports options such as selecting files by sub-string filter or list. Type `clifs ren --help` for a list of options. By default a preview mode is running to prevent unpleasant surprises.
+Rename files or directories using regular expressions. Supports options such as selecting files and folders by sub-string filter or list. Type `clifs ren --help` for a list of options. By default a preview mode is running to prevent unpleasant surprises.
 
 ### Example:
 

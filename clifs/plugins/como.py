@@ -18,10 +18,10 @@ from clifs.utils_cli import (
     print_line,
     set_style,
 )
-from clifs.utils_fs import FileGetterMixin, get_unique_path
+from clifs.utils_fs import PathGetterMixin, get_unique_path
 
 
-class CoMo(ClifsPlugin, FileGetterMixin):
+class CoMo(ClifsPlugin, PathGetterMixin):
     """
     Base class to copy or move files.
 
@@ -83,14 +83,14 @@ class CoMo(ClifsPlugin, FileGetterMixin):
             "or keep both versions. Choose wisely!"
         )
 
-        self.files2process = self.get_files()
+        self.files2process, _ = self.get_paths()
 
         # define progress
         self.progress: Dict[str, Progress] = {
             "counts": get_count_progress(),
             "overall": get_last_action_progress(),
         }
-
+        self.action = "Moving" if self.move else "Copying"
         self.tasks = self.get_tasks()
 
         self.progress_table = Table.grid()
@@ -118,7 +118,7 @@ class CoMo(ClifsPlugin, FileGetterMixin):
         # define overall progress task
         tasks = {
             "progress": self.progress["overall"].add_task(
-                "Storing data:  ", total=len(self.files2process), last_action="-"
+                f"{self.action} data:  ", total=len(self.files2process), last_action="-"
             ),
         }
 
@@ -146,11 +146,24 @@ class CoMo(ClifsPlugin, FileGetterMixin):
             )
         return tasks
 
+    def create_file(self, file_src: Path, file_dest: Path) -> None:
+        if not self.flatten and not self.dryrun:
+            file_dest.parent.mkdir(exist_ok=True, parents=True)
+        if self.move:
+            if not self.dryrun:
+                shutil.move(str(file_src), str(file_dest))
+            self.progress["counts"].advance(self.tasks["files_moved"])
+        else:
+            if not self.dryrun:
+                shutil.copy2(str(file_src), str(file_dest))
+            self.progress["counts"].advance(self.tasks["files_copied"])
+
     def como(self) -> None:
         print_line(self.console)
-        action = "moving" if self.move else "copying"
+        if self.dryrun:
+            print("Dry run:\n")
         self.console.print(
-            f"{action} {len(self.files2process)} files\n"
+            f"{self.action} {len(self.files2process)} files\n"
             f"from: {self.dir_source}\n"
             f"to:   {self.dir_dest}"
         )
@@ -189,27 +202,20 @@ class CoMo(ClifsPlugin, FileGetterMixin):
                         )
                         self.progress["counts"].advance(self.tasks["files_replaced"])
 
-                if not self.dryrun and not skip:
-                    if not self.flatten:
-                        filepath_dest.parent.mkdir(exist_ok=True, parents=True)
-                    if self.move:
-                        shutil.move(str(file), str(filepath_dest))
-                        self.progress["counts"].advance(self.tasks["files_moved"])
-                    else:
-                        shutil.copy2(str(file), str(filepath_dest))
-                        self.progress["counts"].advance(self.tasks["files_copied"])
+                if not skip:
+                    self.create_file(file, filepath_dest)
 
-                action = "moved" if self.move else "copied"
+                last_action = "moved" if self.move else "copied"
                 if not self.terse:
                     cli_bar(
                         num_file,
                         len(self.files2process),
-                        suffix=f"{action}. {txt_report}",
+                        suffix=f"{last_action}. {txt_report}",
                         console=self.console,
                     )
                 self.progress["overall"].update(
                     self.tasks["progress"],
-                    last_action=f"{action} {file.name}",
+                    last_action=f"{last_action} {file.name}",
                 )
                 self.progress["overall"].advance(self.tasks["progress"])
                 live.refresh()

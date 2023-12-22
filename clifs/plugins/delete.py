@@ -2,15 +2,13 @@
 
 import sys
 from argparse import ArgumentParser, Namespace
-from pathlib import Path
-from typing import List
 
 from clifs import ClifsPlugin
 from clifs.utils_cli import CONSOLE, cli_bar, print_line, user_query
-from clifs.utils_fs import FileGetterMixin
+from clifs.utils_fs import PathGetterMixin
 
 
-class FileDeleter(ClifsPlugin, FileGetterMixin):
+class FileDeleter(ClifsPlugin, PathGetterMixin):
     """
     Delete files
     """
@@ -36,7 +34,7 @@ class FileDeleter(ClifsPlugin, FileGetterMixin):
     def __init__(self, args: Namespace) -> None:
         super().__init__(args)
         self.console = CONSOLE
-        self.files2process: List[Path] = self.get_files()
+        self.files2process, _ = self.get_paths()
 
     def run(self) -> None:
         self.exit_if_nothing_to_process(self.files2process)

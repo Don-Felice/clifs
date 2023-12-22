@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Common pytest fixtures"""
 
 
 import shutil

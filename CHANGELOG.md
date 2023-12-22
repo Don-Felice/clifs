@@ -2,12 +2,16 @@
 
 ## Unreleased Changes
 
+- refactors and rewording
+- `rename`:
+  - add `--dirs` option to rename directories instead of files
+  - extend testing
 
 ## v1.1.2 - Dec. 07, 2023
 
 - fix issue in trigger of the publishing ci pipeline
 
-## v1.1.1 - Dec. 07, 2023 
+## v1.1.1 - Dec. 07, 2023
 
 - fix issue in release pipeline
 

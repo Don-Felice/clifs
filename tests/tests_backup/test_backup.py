@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Test the backup plugin"""
 
 
 from pathlib import Path
