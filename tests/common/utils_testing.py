@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Common utils for testing"""
 
 import os
 import re
@@ -55,9 +55,11 @@ def assert_files_present(dir_source, dir_ref, check_mtime=True):
     print("---------------------")
 
 
-def substr_in_dir_names(directory, sub_str="DELME", files_only=False):
+def substr_in_dir_names(directory, sub_str="DELME", files_only=False, dirs_only=False):
     if files_only:
         return any([sub_str in x.name for x in directory.rglob("*") if x.is_file()])
+    elif dirs_only:
+        return any([sub_str in x.name for x in directory.rglob("*") if x.is_dir()])
     else:
         return any([sub_str in x.name for x in directory.rglob("*")])
 

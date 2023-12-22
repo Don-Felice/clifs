@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Test the delete plugin"""
 
 
 from unittest.mock import patch

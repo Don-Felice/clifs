@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Test the copy and move plugins"""
 
 
 from unittest.mock import patch

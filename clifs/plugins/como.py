@@ -18,10 +18,10 @@ from clifs.utils_cli import (
     print_line,
     set_style,
 )
-from clifs.utils_fs import FileGetterMixin, get_unique_path
+from clifs.utils_fs import PathGetterMixin, get_unique_path
 
 
-class CoMo(ClifsPlugin, FileGetterMixin):
+class CoMo(ClifsPlugin, PathGetterMixin):
     """
     Base class to copy or move files.
 
@@ -83,7 +83,7 @@ class CoMo(ClifsPlugin, FileGetterMixin):
             "or keep both versions. Choose wisely!"
         )
 
-        self.files2process = self.get_files()
+        self.files2process, _ = self.get_paths()
 
         # define progress
         self.progress: Dict[str, Progress] = {
@@ -146,8 +146,22 @@ class CoMo(ClifsPlugin, FileGetterMixin):
             )
         return tasks
 
+    def create_file(self, file_src: Path, file_dest: Path) -> None:
+        if not self.flatten and not self.dryrun:
+            file_dest.parent.mkdir(exist_ok=True, parents=True)
+        if self.move:
+            if not self.dryrun:
+                shutil.move(str(file_src), str(file_dest))
+            self.progress["counts"].advance(self.tasks["files_moved"])
+        else:
+            if not self.dryrun:
+                shutil.copy2(str(file_src), str(file_dest))
+            self.progress["counts"].advance(self.tasks["files_copied"])
+
     def como(self) -> None:
         print_line(self.console)
+        if self.dryrun:
+            print("Dry run:\n")
         self.console.print(
             f"{self.action} {len(self.files2process)} files\n"
             f"from: {self.dir_source}\n"
@@ -188,15 +202,8 @@ class CoMo(ClifsPlugin, FileGetterMixin):
                         )
                         self.progress["counts"].advance(self.tasks["files_replaced"])
 
-                if not self.dryrun and not skip:
-                    if not self.flatten:
-                        filepath_dest.parent.mkdir(exist_ok=True, parents=True)
-                    if self.move:
-                        shutil.move(str(file), str(filepath_dest))
-                        self.progress["counts"].advance(self.tasks["files_moved"])
-                    else:
-                        shutil.copy2(str(file), str(filepath_dest))
-                        self.progress["counts"].advance(self.tasks["files_copied"])
+                if not skip:
+                    self.create_file(file, filepath_dest)
 
                 last_action = "moved" if self.move else "copied"
                 if not self.terse:

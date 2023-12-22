@@ -33,7 +33,7 @@ du = "clifs.plugins.disc_usage:DiscUsageExplorer"
 cp = "clifs.plugins.como:FileCopier"
 mv = "clifs.plugins.como:FileMover"
 del = "clifs.plugins.delete:FileDeleter"
-ren = "clifs.plugins.rename:FileRenamer"
+ren = "clifs.plugins.rename:Renamer"
 backup = "clifs.plugins.backup:FileSaver"
 
 [tool.hatch.envs.default]

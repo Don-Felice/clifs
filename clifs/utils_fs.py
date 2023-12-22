@@ -5,14 +5,14 @@ import re
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
-from typing import Any, List, Optional, Set
+from typing import Any, List, Optional, Set, Tuple
 
 INDENT = "    "
 
 
-class FileGetterMixin:
+class PathGetterMixin:
     """
-    Get files from a source directory by different filter methods.
+    Get paths from a source directory by different filter methods.
     """
 
     dir_source: Path
@@ -71,44 +71,61 @@ class FileGetterMixin:
             help="Substring identifying files to be copied. not case sensitive.",
         )
 
-    def get_files(self) -> List[Path]:
-        """Get file paths."""
-        files2process = self._get_files_by_filterstring(
+    def get_paths(self) -> Tuple[List[Path], List[Path]]:
+        """Get file and folder paths depending on set filters
+
+        :return: Lists of file paths and folder paths matching the filters respectively
+        """
+        files, dirs = self._get_paths_by_filterstring(
             self.dir_source, filterstring=self.filterstring, recursive=self.recursive
         )
 
         if self.filterlist:
             list_filter = self._list_from_csv()
-            files2process = self._filter_by_list(files2process, list_filter)
-        return files2process
+            files = [i for i in files if i.name in list_filter]
+            dirs = [i for i in dirs if i.name in list_filter]
+        return files, dirs
 
     @staticmethod
-    def exit_if_nothing_to_process(files2process: List[Any]) -> None:
+    def exit_if_nothing_to_process(items: List[Any]) -> None:
         """Exit running process if list of files to process is empty"""
-        if not files2process:
+        if not items:
             print("Nothing to process.")
             sys.exit(0)
 
     @staticmethod
-    def _get_files_by_filterstring(
+    def sort_paths(paths: List[Path]) -> List[Path]:
+        """Sort by inverse depth and str
+
+        :param paths: List of paths to sort
+        :return: Sorted list of paths
+        """
+        return sorted(paths, key=lambda x: (-len(x.parents), str(x)))
+
+    @staticmethod
+    def _get_paths_by_filterstring(
         dir_source: Path, filterstring: Optional[str] = None, recursive: bool = False
-    ) -> List[Path]:
+    ) -> Tuple[List[Path], List[Path]]:
         """Get files by substring filter on the file name.
 
         :param dir_source: directory to search for files in
         :param filterstring: Substring that must be included in a file name.
             If set to None, files are not filtered by substring. Defaults to None.
         :param recursive: Search recursively, defaults to False
-        :return: List of file paths matching the filter
+        :return: Lists of file paths and dir paths matching the filter respectively
         """
         pattern_search = f"*{filterstring}*" if filterstring else "*"
         if recursive:
             pattern_search = "**/" + pattern_search
-        return [file for file in dir_source.glob(pattern_search) if not file.is_dir()]
+        files = []
+        dirs = []
+        for path in dir_source.glob(pattern_search):
+            if path.is_dir():
+                dirs.append(path.resolve())
+            else:
+                files.append(path.resolve())
 
-    @staticmethod
-    def _filter_by_list(files: List[Path], list_filter: List[str]) -> List[Path]:
-        return [i for i in files if i.name in list_filter]
+        return files, dirs
 
     def _list_from_csv(self) -> List[str]:
         if not self.filterlistheader:
