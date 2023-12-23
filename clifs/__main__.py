@@ -23,7 +23,14 @@ def main() -> None:
     commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
     plugins: Dict[str, Type[ClifsPlugin]] = {}
-    for entry_point in entry_points()["clifs.plugins"]:
+
+    # depending on Python version 'entry_points' returns a dict or 'EntryPoints' object
+    if sys.version_info < (3, 10):
+        plugin_entry_points = entry_points()["clifs.plugins"]
+    else:
+        plugin_entry_points = entry_points().select(group="clifs.plugins")
+
+    for entry_point in plugin_entry_points:
         plugins[entry_point.name] = entry_point.load()
         subparser = commands.add_parser(
             entry_point.name, help=plugins[entry_point.name].__doc__
