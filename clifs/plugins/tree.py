@@ -114,17 +114,16 @@ class Folder(Entry):
                 elif self.connector == ELBOW:  # last dir
                     child_prefix += SPACE_PREFIX
 
-                if item.is_file():
-                    if not self.dirs_only or self.plot_size:
-                        children.append(
-                            File(
-                                path=item,
-                                prefix=child_prefix,
-                                connector=child_connector,
-                                depth=self.depth + 1,
-                                plot_size=self.plot_size,
-                            )
+                if item.is_file() and (not self.dirs_only or self.plot_size):
+                    children.append(
+                        File(
+                            path=item,
+                            prefix=child_prefix,
+                            connector=child_connector,
+                            depth=self.depth + 1,
+                            plot_size=self.plot_size,
                         )
+                    )
                 if item.is_dir():
                     children.append(
                         Folder(

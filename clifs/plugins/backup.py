@@ -2,6 +2,7 @@
 
 import csv
 import shutil
+import sys
 import time
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
@@ -41,10 +42,9 @@ def conditional_copy(
     elif (path_source.stat().st_mtime - path_dest.stat().st_mtime) > 1:
         process = "updating"
 
-    if process is not None:
-        if not dry_run:
-            path_dest.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(path_source, path_dest)
+    if process is not None and not dry_run:
+        path_dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path_source, path_dest)
     return process
 
 
@@ -142,12 +142,12 @@ class FileSaver(ClifsPlugin):
         super().__init__(args)
         self.console = CONSOLE
 
-        assert not (
-            self.cfg_file and self.dir_source or self.cfg_file and self.dir_dest
-        ), (
-            "Paths provided in config table and as parameters. "
-            "You'll have to decide for one option I am afraid."
-        )
+        if self.cfg_file and self.dir_source or self.cfg_file and self.dir_dest:
+            self.console.print(
+                "Paths provided in config table and as parameters. "
+                "You'll have to decide for one option I am afraid."
+            )
+            sys.exit(0)
 
         if self.cfg_file:
             # TODO: check_cfg_format(cfg_file)  # pylint: disable=fixme

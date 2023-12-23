@@ -1,6 +1,7 @@
 """Clifs plugins for file copying and moving"""
 
 import shutil
+import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Dict, List
@@ -78,10 +79,12 @@ class CoMo(ClifsPlugin, PathGetterMixin):
     def __init__(self, args: Namespace) -> None:
         super().__init__(args)
 
-        assert not (self.skip_existing and self.keep_all), (
-            "You can only choose to either skip existing files "
-            "or keep both versions. Choose wisely!"
-        )
+        if self.skip_existing and self.keep_all:
+            self.console.print(
+                "You can only choose to either skip existing files "
+                "or keep both versions. Choose wisely!"
+            )
+            sys.exit(0)
 
         self.files2process, _ = self.get_paths()
 
