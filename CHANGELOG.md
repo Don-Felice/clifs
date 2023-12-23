@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+
+## v1.2.1 - Dec. 23, 2023
+
 - fix retrieval of 'clifs.plugin' entrypoints for Python 3.12
 - use `ruff` for formatting and linting replacing `black`, `isort`, and `flake8`
 
