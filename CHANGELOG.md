@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 
+- use `ruff` for formatting and linting replacing `black`, `isort`, and `flake8`
 
 ## v1.2.0 - Dec. 22, 2023
 
