@@ -4,10 +4,24 @@ import csv
 import re
 import sys
 from argparse import ArgumentParser
+from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Optional, Set, Tuple
+from typing import Any, List, Literal, Optional, Set, Tuple
+
+from dateutil.relativedelta import relativedelta
+
+from clifs.utils_cli import CONSOLE, set_style
 
 INDENT = "    "
+TIME_INTERVAL_HELPTEXT = """The time interval can be given in units of:
+ seconds ('s'), minutes ('min'), hours ('h'), days ('d'), months ('mon'),
+ or years ('a' or 'y'). The default unit is days. Hence e.g. and input of '3 mon' would
+ be interpreted as three months ago while an input of '1.5' would be interpreted as one
+ and a half days ago."""
+CTIME_HELPTEXT = """Be aware that the meaning of 'ctime' depends on the operating
+ system. On some systems (like Unix) it is the time of the last metadata change, and
+ on others (like Windows), it is the creation time
+ (see https://docs.python.org/3/library/stat.html)."""
 
 
 class PathGetterMixin:
@@ -21,6 +35,10 @@ class PathGetterMixin:
     filterlistheader: str
     filterlistsep: str
     filterstring: str
+    mtime_stamp_older: Optional[str] = None
+    mtime_stamp_newer: Optional[str] = None
+    ctime_stamp_older: Optional[str] = None
+    ctime_stamp_newer: Optional[str] = None
 
     @staticmethod
     def init_parser_mixin(parser: ArgumentParser) -> None:
@@ -70,27 +88,109 @@ class PathGetterMixin:
             default=None,
             help="Substring identifying files to be copied. not case sensitive.",
         )
+        parser.add_argument(
+            "-mto",
+            "--mtime_stamp_older",
+            default=None,
+            help="Select only files which were last modified more than the given "
+            f"period of time ago. {TIME_INTERVAL_HELPTEXT}",
+        )
+        parser.add_argument(
+            "-mtn",
+            "--mtime_stamp_newer",
+            default=None,
+            help="Select only files which were last modified more recently than the "
+            f"given period of time ago. {TIME_INTERVAL_HELPTEXT}",
+        )
+        parser.add_argument(
+            "-cto",
+            "--ctime_stamp_older",
+            default=None,
+            help="Select only files which were created/changed more than the given "
+            f"period of time ago. {TIME_INTERVAL_HELPTEXT} {CTIME_HELPTEXT}",
+        )
+        parser.add_argument(
+            "-ctn",
+            "--ctime_stamp_newer",
+            default=None,
+            help="Select only files which were created/changed more recently than the "
+            f"given period of time ago. {TIME_INTERVAL_HELPTEXT} {CTIME_HELPTEXT}",
+        )
 
     def get_paths(self) -> Tuple[List[Path], List[Path]]:
         """Get file and folder paths depending on set filters
 
         :return: Lists of file paths and folder paths matching the filters respectively
         """
+        # get paths by substring filter
         files, dirs = self._get_paths_by_filterstring(
             self.dir_source, filterstring=self.filterstring, recursive=self.recursive
         )
 
+        # filter by list
         if self.filterlist:
             list_filter = self._list_from_csv()
             files = [i for i in files if i.name in list_filter]
             dirs = [i for i in dirs if i.name in list_filter]
+
+        # filter by mtime
+        if self.mtime_stamp_older or self.mtime_stamp_newer:
+            files, dirs = self.filter_by_time(
+                files,
+                dirs,
+                "st_mtime",
+                delta_th_upper=self.mtime_stamp_older,
+                delta_th_lower=self.mtime_stamp_newer,
+            )
+
+        # filter by ctime
+        if self.ctime_stamp_older or self.ctime_stamp_newer:
+            files, dirs = self.filter_by_time(
+                files,
+                dirs,
+                "st_ctime",
+                delta_th_upper=self.ctime_stamp_older,
+                delta_th_lower=self.ctime_stamp_newer,
+            )
+
         return files, dirs
+
+    def filter_by_time(  # pylint: disable=too-many-arguments
+        self,
+        files: List[Path],
+        dirs: List[Path],
+        time_stat: Literal["st_ctime", "st_mtime"],
+        delta_th_upper: Optional[str],
+        delta_th_lower: Optional[str],
+    ) -> Tuple[List[Path], List[Path]]:
+        th_upper = (
+            None if not delta_th_upper else self._get_time_threshold(delta_th_upper)
+        )
+        th_lower = (
+            None if not delta_th_lower else self._get_time_threshold(delta_th_lower)
+        )
+
+        files_filtered = []
+        dirs_filtered = []
+        for file in files:
+            path_time = getattr(file.stat(), time_stat)
+            if (not th_upper or path_time <= th_upper) and (
+                not th_lower or path_time >= th_lower
+            ):
+                files_filtered.append(file)
+        for folder in dirs:
+            path_time = getattr(folder.stat(), time_stat)
+            if (not th_upper or path_time <= th_upper) and (
+                not th_lower or path_time >= th_lower
+            ):
+                dirs_filtered.append(folder)
+        return files_filtered, dirs_filtered
 
     @staticmethod
     def exit_if_nothing_to_process(items: List[Any]) -> None:
         """Exit running process if list of files to process is empty"""
         if not items:
-            print("Nothing to process.")
+            CONSOLE.print("Nothing to process.")
             sys.exit(0)
 
     @staticmethod
@@ -138,13 +238,59 @@ class PathGetterMixin:
                     try:
                         res_list.append(row[self.filterlistheader])
                     except KeyError:
-                        print(
-                            "Provided csv does not contain header "
-                            f"'{self.filterlistheader}'. Found headers:\n"
-                            f"{list(row.keys())}"
+                        CONSOLE.print(
+                            set_style(
+                                "Provided csv does not contain header "
+                                f"'{self.filterlistheader}'. Found headers:\n"
+                                f"{list(row.keys())}",
+                                "error",
+                            )
                         )
-                        raise
+                        sys.exit(1)
         return res_list
+
+    @staticmethod
+    def _get_time_threshold(time_input: str, now: datetime = datetime.now()) -> float:
+        try:
+            if "." in time_input:
+                raise ValueError()
+            if time_input.endswith("s"):  # seconds
+                quantity = int(time_input.rstrip("s").rstrip())
+                threshold = (now - relativedelta(seconds=quantity)).timestamp()
+
+            elif time_input.endswith("min"):  # minutes
+                quantity = int(time_input.rstrip("min").rstrip())
+                threshold = (now - relativedelta(minutes=quantity)).timestamp()
+
+            elif time_input.endswith("h"):  # hours
+                quantity = int(time_input.rstrip("h").rstrip())
+                threshold = (now - relativedelta(hours=quantity)).timestamp()
+
+            elif time_input.endswith("mon"):  # months
+                quantity = int(time_input.rstrip("mon").rstrip())
+                threshold = (now - relativedelta(months=quantity)).timestamp()
+
+            elif time_input.endswith("a") or time_input.endswith("y"):  # years
+                quantity = int(time_input.rstrip("a").rstrip("y").rstrip())
+                threshold = (now - relativedelta(years=quantity)).timestamp()
+
+            else:  # days (default unit)
+                quantity = int(time_input.rstrip("d").rstrip())
+                threshold = (now - relativedelta(days=quantity)).timestamp()
+
+        except ValueError:
+            CONSOLE.print(
+                set_style(
+                    f"Input time has invalid format: '{time_input}'.\n"
+                    "Expecting an integer optionally followed by one of the "
+                    "following unit identifiers:\n"
+                    "'s' (seconds), 'm' (minutes), 'h' (hours), 'd' (days), "
+                    "or 'y' (years).",
+                    "error",
+                )
+            )
+            sys.exit(1)
+        return threshold
 
 
 def get_unique_path(
