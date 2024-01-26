@@ -4,6 +4,7 @@
 
 - backup:
   - catch scenario where no parameters specifying source and destination directories are provided
+- fix regex example in README.md
 
 ## v1.3.0 - Jan. 26, 2024
 
