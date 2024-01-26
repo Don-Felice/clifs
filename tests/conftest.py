@@ -3,6 +3,7 @@
 
 import shutil
 from pathlib import Path
+from typing import List
 
 import pytest
 
@@ -10,14 +11,14 @@ from tests.common.utils_testing import get_files, update_mtime
 
 
 @pytest.fixture(scope="function")
-def dir_testrun(tmp_path: Path):
+def dir_testrun(tmp_path: Path) -> Path:
     # create source dest structure for update test
     shutil.copytree(Path(__file__).parent / "common" / "data", tmp_path / "data")
     return tmp_path
 
 
 @pytest.fixture(scope="function")
-def dirs_source(dir_testrun, num_dirs=2):
+def dirs_source(dir_testrun, num_dirs=2) -> List[Path]:
     dirs_res = [
         (dir_testrun / "data" / ("dir_source_" + str(i)))
         for i in range(1, num_dirs + 1)
