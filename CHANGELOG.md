@@ -2,6 +2,8 @@
 
 ## Unreleased Changes
 
+- backup:
+  - catch scenario where no parameters specifying source and destination directories are provided
 
 ## v1.3.0 - Jan. 26, 2024
 
