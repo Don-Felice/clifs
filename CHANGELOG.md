@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+
+## v1.3.0 - Jan. 26, 2024
+
 - path_getter: allow to filter processed files and folders by last modification (mtime) and/or creation/change date. Introduced cli options are: 'mtime_stamp_older', 'mtime_stamp_newer', 'ctime_stamp_older', 'ctime_stamp_newer'.
   Plugins supporting time filtering: `ren`, `cp`, `mv`, `del`
 - some wording in the docu
