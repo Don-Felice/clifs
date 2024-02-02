@@ -201,28 +201,28 @@ class DirectoryTree(ClifsPlugin):
             type=Path,
             default=".",
             nargs="?",
-            help="Root directory to generate tree",
+            help="Root directory to generate tree.",
         )
         parser.add_argument(
             "-do",
             "--dirs_only",
             action="store_true",
             default=False,
-            help="Get info only on directories",
+            help="Only show directories and no files.",
         )
         parser.add_argument(
             "-hs",
             "--hide_sizes",
             action="store_true",
             default=False,
-            help="Hide size information",
+            help="Hide size information.",
         )
         parser.add_argument(
             "-d",
             "--depth",
             type=int,
             default=None,
-            help="Max depth to which the tree is plotted",
+            help="Max depth to which the tree is plotted. Relative to 'root_dir'",
         )
 
     def __init__(self, args: Namespace) -> None:

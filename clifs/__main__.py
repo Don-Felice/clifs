@@ -8,7 +8,7 @@ from typing import Dict, Type
 
 import clifs
 from clifs import ClifsPlugin
-from clifs.utils_cli import CONSOLE, set_style
+from clifs.utils_cli import CONSOLE, ClifsHelpFormatter, set_style
 
 
 def main() -> None:
@@ -17,9 +17,7 @@ def main() -> None:
         set_style(f"running `clifs` version: {clifs.__version__}", "bright_black")
     )
 
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
-    )
+    parser = argparse.ArgumentParser(formatter_class=ClifsHelpFormatter)
     commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
     plugins: Dict[str, Type[ClifsPlugin]] = {}
@@ -33,7 +31,9 @@ def main() -> None:
     for entry_point in plugin_entry_points:
         plugins[entry_point.name] = entry_point.load()
         subparser = commands.add_parser(
-            entry_point.name, help=plugins[entry_point.name].__doc__
+            entry_point.name,
+            help=plugins[entry_point.name].__doc__,
+            formatter_class=ClifsHelpFormatter,
         )
         plugins[entry_point.name].init_parser(parser=subparser)
 

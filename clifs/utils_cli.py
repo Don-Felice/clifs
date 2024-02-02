@@ -1,5 +1,6 @@
 """Utilities for the command line interface"""
 
+import argparse
 from typing import Iterable, Optional
 
 from rich.console import Console, RenderableType
@@ -151,3 +152,26 @@ def get_last_action_progress() -> LastActionProgress:
         TaskProgressColumn(),
         TimeRemainingColumn(),
     )
+
+
+class ClifsHelpFormatter(argparse.HelpFormatter):
+    """Help text formatter for argparse.ArgumentParser
+
+    Hides destination variables or positional args.
+    Shows default values with string defaults being quoted."""
+
+    # do not show dest variable for optional args in help
+    def _get_default_metavar_for_optional(self, action: argparse.Action) -> str:
+        return ""
+
+    # show default values with quoted strings
+    def _get_help_string(self, action: argparse.Action) -> str:
+        action_help = action.help if action.help else ""
+        if "%(default)" not in action_help and action.default is not argparse.SUPPRESS:
+            defaulting_nargs = [argparse.OPTIONAL, argparse.ZERO_OR_MORE]
+            if action.option_strings or action.nargs in defaulting_nargs:
+                def_str = "%(default)s"
+                if isinstance(action.default, str):
+                    def_str = f"'{def_str}'"
+                action_help += f" (default: {def_str})"
+        return action_help
