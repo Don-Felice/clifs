@@ -3,8 +3,6 @@
 import re
 import sys
 from argparse import ArgumentParser, Namespace
-
-# from collections import Counter
 from pathlib import Path
 from typing import Counter, List, Literal, Set
 

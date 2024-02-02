@@ -1,6 +1,5 @@
 """Utilities for the command line interface"""
 
-from enum import Enum
 from typing import Iterable, Optional
 
 from rich.console import Console, RenderableType
@@ -22,23 +21,6 @@ THEME_RICH = Theme(
     },
 )
 CONSOLE = Console(theme=THEME_RICH, highlight=False)
-
-
-class AnsiColor(str, Enum):
-    """Ansi escape colors."""
-
-    DEFAULT = "\033[0m"
-    BLUE = "\033[0;34m"
-    CYAN = "\033[0;36m"
-    GRAY = "\033[0;90m"
-    GREEN = "\033[0;32m"
-    MAGENTA = "\033[0;35m"
-    RED = "\033[0;31m"
-    WHITE = "\033[0;37m"
-    YELLOW = "\033[0;93m"
-
-    def __str__(self) -> str:
-        return self.value
 
 
 def set_style(
@@ -104,7 +86,7 @@ def cli_bar(  # pylint: disable=too-many-arguments
     bar_len: int = 20,
     console: Optional[Console] = None,
 ) -> str:
-    """Create progress bar ans either print directly to console or return as string.
+    """Create progress bar and either print directly to console or return as string.
 
     :param status: Number of finished steps
     :param total: Total number of expected steps
@@ -159,7 +141,7 @@ def get_count_progress() -> Progress:
 
 
 def get_last_action_progress() -> LastActionProgress:
-    """Get instance of  a progress bar indicating the last action in a separate line.
+    """Get instance of a progress bar displaying the last action in a separate line.
 
     :return: Progress
     """

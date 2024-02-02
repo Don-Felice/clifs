@@ -2,6 +2,10 @@
 
 ## Unreleased Changes
 
+- backup:
+  - catch scenario where no parameters specifying source and destination directories are provided
+- fix regex example in README.md
+- minor changes in docu
 
 ## v1.3.0 - Jan. 26, 2024
 

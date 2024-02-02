@@ -144,8 +144,15 @@ class FileSaver(ClifsPlugin):
 
         if self.cfg_file and self.dir_source or self.cfg_file and self.dir_dest:
             self.console.print(
-                "Paths provided in config table and as parameters. "
+                "Paths provided in config table and as source/dest parameters. "
                 "You'll have to decide for one option I am afraid."
+            )
+            sys.exit(0)
+        elif not self.cfg_file and not (self.dir_source and self.dir_dest):
+            self.console.print(
+                "You will have to provide either a config file or a source and dest "
+                "directory I am afraid. "
+                "Run 'clifs backup --help' for available options."
             )
             sys.exit(0)
 

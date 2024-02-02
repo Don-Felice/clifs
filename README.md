@@ -19,14 +19,14 @@ To implement your own plugin best inherit from the `clifs.ClifsPlugin` class.
 
 ## Rename (`ren`)
 
-Rename files or directories using regular expressions Supports options such as selecting files and folders by sub-string filter, time of the last modification or creation/change, or by list. Type `clifs ren --help` for a list of options. By default a preview mode is running to prevent unpleasant surprises.
+Rename files or directories using regular expressions. Supports options such as selecting files and folders by sub-string filter, time of the last modification or creation/change, or by list. Type `clifs ren --help` for a list of options. By default a preview mode is running to prevent unpleasant surprises.
 
 ### Example:
 
 Command:
 
 ```powershell
-clifs ren ".\some_dir" --recursive --pattern "^((?!.*_suffix).*)\.(.*)$" --replacement "\1_suffix.\2"
+clifs ren ".\some_dir" --recursive --pattern "(.*)(?<!_suffix)\.(.*)" --replacement "\1_suffix.\2"
 ```
 
 Output:

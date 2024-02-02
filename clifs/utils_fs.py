@@ -65,7 +65,7 @@ class PathGetterMixin:
             "In case of a CSV, separator and header can be provided additionally via "
             "the parameters `filterlistsep` and `filterlistheader`. "
             "If no header is provided, each line in the file is treated as individual "
-            "file name.",
+            "file or folder name.",
         )
         parser.add_argument(
             "-flh",
@@ -86,7 +86,7 @@ class PathGetterMixin:
             "-fs",
             "--filterstring",
             default=None,
-            help="Substring identifying files to be copied. not case sensitive.",
+            help="Substring identifying files to be copied. Not case sensitive.",
         )
         parser.add_argument(
             "-mto",
