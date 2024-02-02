@@ -80,7 +80,7 @@ class PathGetterMixin:
             "-fls",
             "--filterlistsep",
             default=",",
-            help="Separator to use for csv provided as filter list. Default: ','",
+            help="Separator to use for csv provided as filter list.",
         )
         parser.add_argument(
             "-fs",

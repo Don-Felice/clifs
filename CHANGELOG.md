@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+- nicer help texts:
+  - show default values for cli arguments
+  - do not show destination variable for positional cli arguments
 
 ## v1.3.1 - Feb. 02, 2024
 

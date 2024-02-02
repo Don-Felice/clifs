@@ -44,8 +44,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             help="String to use as replacement. "
             "You can use \\1 \\2 etc. to refer to matching groups. "
             "E.g. a pattern like '(.+)\\.(.+)' in combination "
-            "with a replacement like '\\1_suffix.\\2' will append suffixes. "
-            "Defaults to empty string.",
+            "with a replacement like '\\1_suffix.\\2' will append suffixes.",
         )
         parser.add_argument(
             "-d",
