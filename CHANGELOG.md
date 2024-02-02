@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+
+## v1.3.1 - Feb. 02, 2024
+
 - backup:
   - catch scenario where no parameters specifying source and destination directories are provided
 - fix regex example in README.md
