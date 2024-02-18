@@ -26,7 +26,7 @@ Rename files or directories using regular expressions. Supports options such as 
 Command:
 
 ```powershell
-clifs ren ".\some_dir" --recursive --pattern "(.*)(?<!_suffix)\.(.*)" --replacement "\1_suffix.\2"
+clifs ren ".\some_dir" --recursive --pattern "(?<!_suffix)\.(.*)" --replacement "_suffix.\1"
 ```
 
 Output:
