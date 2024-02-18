@@ -69,7 +69,7 @@ source = ['clifs']
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 [tool.pylint.'MESSAGES CONTROL']
-disable = "missing-function-docstring"
+disable = ["missing-function-docstring", "duplicate-code"]
 
 [tool.ruff]
 extend-select = [
