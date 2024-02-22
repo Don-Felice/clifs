@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 
+- add streaming editor plugin (`sed`)
 - rename:
   - highlight regex matches in the reporting
   - cleaner reports
