@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+
+## v1.5.1 - Feb. 22, 2024
+
 - streaming editor: nicer reporting
 
 ## v1.5.0 - Feb. 22, 2024
