@@ -40,8 +40,9 @@ class FileDeleter(ClifsPlugin, PathGetterMixin):
         self.exit_if_nothing_to_process(self.files2process)
 
         if not self.skip_preview:
-            self.console.print("Preview:")
+            print_line(self.console, "PREVIEW")
             self.delete_files(dry_run=True)
+            print_line(self.console, "END OF PREVIEW")
             if not user_query(
                 'If you want to delete for real, give me a "yes" or "y" now!'
             ):
@@ -51,7 +52,6 @@ class FileDeleter(ClifsPlugin, PathGetterMixin):
 
     def delete_files(self, dry_run: bool = False) -> None:
         num_files2process = len(self.files2process)
-        print_line(self.console)
         if dry_run:
             self.console.print(f"Would delete the following {num_files2process} files:")
         else:
@@ -68,6 +68,5 @@ class FileDeleter(ClifsPlugin, PathGetterMixin):
                     num_files2process,
                     suffix=f"deleted. Last: {path_file.name}",
                 )
-        print_line(self.console)
         if not dry_run:
             print(f"Hurray, {num_file} files have been deleted.")

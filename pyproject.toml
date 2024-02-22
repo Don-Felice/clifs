@@ -35,6 +35,7 @@ mv = "clifs.plugins.como:FileMover"
 del = "clifs.plugins.delete:FileDeleter"
 ren = "clifs.plugins.rename:Renamer"
 backup = "clifs.plugins.backup:FileSaver"
+sed = "clifs.plugins.edit:StreamingEditor"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -68,7 +69,7 @@ source = ['clifs']
 exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 
 [tool.pylint.'MESSAGES CONTROL']
-disable = "missing-function-docstring"
+disable = ["missing-function-docstring", "duplicate-code"]
 
 [tool.ruff]
 extend-select = [

@@ -2,6 +2,12 @@
 
 ## Unreleased Changes
 
+- add streaming editor plugin (`sed`)
+- rename:
+  - highlight regex matches in the reporting
+  - cleaner reports
+- delete:
+  - cleaner reports
 
 ## v1.4.0 - Feb. 02, 2024
 

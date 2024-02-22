@@ -6,8 +6,10 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 from typing import Counter, List, Literal, Set
 
+from rich.text import Text
+
 from clifs import ClifsPlugin
-from clifs.utils_cli import cli_bar, print_line, set_style, user_query
+from clifs.utils_cli import MatchHighlighter, cli_bar, print_line, set_style, user_query
 from clifs.utils_fs import INDENT, PathGetterMixin, get_unique_path
 
 
@@ -69,6 +71,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
         if self.rename_dirs:
             # process deeper folders first to avoid changing paths on the fly
             self.dirs = self.sort_paths(self.dirs)
+        self.highlight_match = MatchHighlighter(pattern=self.pattern)
 
     def run(self) -> None:
         if not self.rename_dirs:
@@ -106,30 +109,33 @@ class Renamer(ClifsPlugin, PathGetterMixin):
         self.counter["paths_total"] = len(paths)
 
         self.console.print(f"Renaming {self.counter['paths_total']} {path_type}.")
-        print_line(self.console)
         paths_to_be_added: Set[Path] = set()
         paths_to_be_deleted: Set[Path] = set()
         if preview_mode:
-            self.console.print("Preview:")
+            print_line(self.console, "PREVIEW")
 
         num_path = 0
         for num_path, path in enumerate(paths, 1):
             name_old = path.name
             name_new = re.sub(self.pattern, self.replacement, name_old)
-            message_rename = f"{name_old:35} -> {name_new:35}"
+            messages: List[Text] = []
 
             # skip items if renaming would result in bad characters
             found_bad_chars = self.find_bad_char(name_new)
             if found_bad_chars:
-                message_rename += set_style(
-                    f"{INDENT}Error: not doing renaming as it would result "
-                    f"in bad characters: '{','.join(found_bad_chars)}'",
-                    "error",
+                messages.append(
+                    Text(
+                        f"{INDENT}Error: not doing renaming as it would result "
+                        f"in invalid characters: '{','.join(found_bad_chars)}'",
+                        style="error",
+                    )
                 )
                 self.counter["bad_results"] += 1
                 self.print_rename_message(
-                    message_rename,
+                    name_old,
+                    name_new,
                     num_path,
+                    add_messages=messages,
                     preview_mode=preview_mode,
                 )
                 continue
@@ -145,28 +151,25 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             if path_new != path_unique:
                 path_new = path_unique
                 name_new = path_unique.name
-                message_rename = f"{name_old:35} -> {name_new:35}"
-                message_rename += set_style(
-                    f"{INDENT}Warning: name already exists. Adding number suffix.",
-                    "warning",
+                messages.append(
+                    Text(
+                        f"{INDENT}Warning: name already exists. Adding number suffix.",
+                        style="warning",
+                    )
                 )
                 self.counter["name_conflicts"] += 1
 
-            # skip items that are not renamed
-            if path_new == path:
-                message_rename = set_style(message_rename, "bright_black")
-                self.print_rename_message(
-                    message_rename,
-                    num_path,
-                    preview_mode=preview_mode,
-                )
-                continue
-
             self.print_rename_message(
-                message_rename,
+                name_old,
+                name_new,
                 num_path,
+                add_messages=messages,
                 preview_mode=preview_mode,
             )
+            # skip items that are not renamed
+            if path_new == path:
+                continue
+
             if not preview_mode:
                 path.rename(path_new)
                 self.counter["paths_renamed"] += 1
@@ -177,21 +180,22 @@ class Renamer(ClifsPlugin, PathGetterMixin):
                 paths_to_be_deleted.add(path)
 
         if self.counter["bad_results"] > 0:
+            noun = "item" if self.counter["name_conflicts"] == 1 else "items"
             self.console.print(
                 set_style(
-                    f"Warning: {self.counter['bad_results']} out of "
-                    f"{self.counter['paths_total']} files not renamed as it would "
-                    "result in bad characters.",
+                    f"Warning: {self.counter['bad_results']} {noun} not renamed, "
+                    "as it would result in invalid characters.",
                     "warning",
                 )
             )
 
         if self.counter["name_conflicts"] > 0:
+            noun = "change" if self.counter["name_conflicts"] == 1 else "changes"
             self.console.print(
                 set_style(
-                    f"Warning: {self.counter['name_conflicts']} out of "
-                    f"{self.counter['paths_total']} renamings would have resulted in "
-                    "name conflicts. Added numbering suffixes to get unique names.",
+                    f"Warning: {self.counter['name_conflicts']} {noun} would have "
+                    "resulted in name conflicts. "
+                    "Added number suffixes to get unique names.",
                     "warning",
                 )
             )
@@ -201,27 +205,46 @@ class Renamer(ClifsPlugin, PathGetterMixin):
                 f"Hurray, {num_path} {path_type} have been processed, "
                 f"{self.counter['paths_renamed']} have been renamed."
             )
-        print_line(self.console)
-
-    def print_rename_message(
-        self,
-        message: str,
-        num_file: int,
-        preview_mode: bool = False,
-        space_prefix: str = "    ",
-    ) -> None:
         if preview_mode:
-            self.console.print(space_prefix + message)
+            print_line(self.console, "END OF PREVIEW")
+
+    def print_rename_message(  # pylint: disable=too-many-arguments
+        self,
+        name_old: str,
+        name_new: str,
+        num_path: int,
+        add_messages: List[Text],
+        preview_mode: bool = False,
+    ) -> None:
+        indent = 2
+        padding = 35
+
+        if name_new == name_old:
+            print_message = Text(
+                f"{name_old:{padding}} -> {name_new:{padding}}", style="bright_black"
+            )
+        else:
+            highlight_old_name = self.highlight_match(name_old)
+            highlight_old_name.pad_right(padding - len(name_old))
+            print_message = highlight_old_name + Text(f" -> {name_new:{padding}}")
+
+        for add_mes in add_messages:
+            add_mes.pad_left(1)
+            print_message += add_mes
+        print_message.pad_left(indent)
+
+        if preview_mode:
+            self.console.print(print_message)
         else:
             cli_bar(
-                num_file,
+                num_path,
                 self.counter["paths_total"],
-                suffix=space_prefix + message,
+                suffix=print_message,
                 console=self.console,
             )
 
     @staticmethod
     def find_bad_char(string: str) -> List[str]:
-        """Check stings for characters causing problems in windows file system."""
+        """Check stings for characters causing problems in Windows file system."""
         bad_chars = r"~“#%&*:<>?/\{|}"
         return [x for x in bad_chars if x in string]

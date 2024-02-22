@@ -1,11 +1,13 @@
 """Utilities for the command line interface"""
 
 import argparse
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 
 from rich.console import Console, RenderableType
+from rich.highlighter import Highlighter
 from rich.progress import BarColumn, Progress, TaskProgressColumn, TimeRemainingColumn
 from rich.rule import Rule
+from rich.text import Text
 from rich.theme import Theme
 
 THEME_RICH = Theme(
@@ -19,9 +21,27 @@ THEME_RICH = Theme(
         "warning": "yellow",
         "error": "red",
         "folder": "yellow",
+        "regex_match": "underline bright_cyan",
     },
 )
 CONSOLE = Console(theme=THEME_RICH, highlight=False)
+
+
+class MatchHighlighter(Highlighter):  # pylint: disable=too-few-public-methods
+    """Applies highlighting from a list of regular expressions."""
+
+    def __init__(self, pattern: str):
+        self.pattern = pattern
+        self.style = "regex_match"
+
+    def highlight(self, text: Text) -> None:
+        """Highlight :class:`rich.text.Text` at match location.
+
+        Args:
+            text (~Text): Text to highlighted.
+
+        """
+        text.highlight_regex(self.pattern, style=self.style)
 
 
 def set_style(
@@ -82,7 +102,7 @@ def size2str(size: float, color: str = "cyan") -> str:
 def cli_bar(  # pylint: disable=too-many-arguments
     status: int,
     total: int,
-    suffix: str = "",
+    suffix: Union[str, Text] = "",
     print_out: bool = True,
     bar_len: int = 20,
     console: Optional[Console] = None,
@@ -99,14 +119,14 @@ def cli_bar(  # pylint: disable=too-many-arguments
     """
     filled_len = int(round(bar_len * status / float(total)))
     percents = round(100.0 * status / float(total), 1)
-    res_bar = "█" * filled_len + "-" * (bar_len - filled_len)
-    output = f"|{res_bar}| {percents:5}% {suffix}"
+    proc_bar = "█" * filled_len + "-" * (bar_len - filled_len)
+    bar_info = f"|{proc_bar}| {percents:5}%"
     if print_out:
         if console:
-            console.print(output)
+            console.print(bar_info, suffix)
         else:
-            print(output)
-    return output
+            print(bar_info + " " + str(suffix))
+    return bar_info + " " + str(suffix)
 
 
 def user_query(message: str) -> bool:
@@ -127,7 +147,7 @@ def print_line(console: Console = CONSOLE, title: str = "") -> None:
     :param console: rich.console to print to, defaults to CONSOLE
     :param title: Title included in the line, defaults to ""
     """
-    console.print(Rule(title=title, align="left"))
+    console.print(Rule(title=title, align="center"))
 
 
 def get_count_progress() -> Progress:

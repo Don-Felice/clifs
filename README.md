@@ -26,7 +26,7 @@ Rename files or directories using regular expressions. Supports options such as 
 Command:
 
 ```powershell
-clifs ren ".\some_dir" --recursive --pattern "(.*)(?<!_suffix)\.(.*)" --replacement "\1_suffix.\2"
+clifs ren ".\some_dir" --recursive --pattern "(?<!_suffix)\.(.*)" --replacement "_suffix.\1"
 ```
 
 Output:
@@ -64,6 +64,22 @@ clifs tree .\clifs --depth 2
 Output:
 
 <img src="https://github.com/Don-Felice/clifs/raw/v1.4.0/doc/imgs/example_tree.png" width="800"/>
+
+## Streaming Editor (`sed`)
+
+Edit text files using regular expressions. Runs line by line and gives a preview of the changes by default. Supports options such as picking lines by number, selection of files by sub-string filter, time of the last modification or creation/change, or by list. Type `clifs sed --help` for a list of options.
+
+You can e.g. remove specific lines choosing `-pt ".*[\r\n]+" -l 5` or add lines in specific locations using `-pt "[\r\n]+" -rp "\nadded line\n" -l 3,4"`.
+
+### Example:
+
+```powershell
+clifs sed ".\some\place" --pattern "(s\w*)" --replacement "no \1"  --lines 4-6 --recursive
+```
+
+Output:
+
+<img src="https://github.com/Don-Felice/clifs/raw/v1.4.0/doc/imgs/example_sed.png" width="800"/>
 
 ## Copy (`cp`)
 
