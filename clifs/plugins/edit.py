@@ -99,8 +99,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
             "--max_previews",
             type=int,
             default=5,
-            help="Max number of changes shown in preview mode. Each line in a file "
-            "where 'pattern' matches at least once counts as a change. "
+            help="Maximum number of line changes shown in the preview mode. "
             "Set to zero to skip preview mode completely. Only for the brave...",
         )
 
@@ -167,7 +166,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
                     self.replace(file)
                     self.progress["overall"].update(
                         self.tasks["progress"],
-                        last_action=f"Edited: {file.name}",
+                        last_action=f"edited '{file.name}'",
                     )
                     self.progress["overall"].advance(self.tasks["progress"])
                     self.progress["counts"].advance(self.tasks["files_edited"])
@@ -227,8 +226,8 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
         tasks["files_edited"] = self.progress["counts"].add_task(
             "Files edited:", total=None
         )
-        tasks["total_replacements"] = self.progress["counts"].add_task(
-            "Total replacements:", total=None
+        tasks["lines_changed_total"] = self.progress["counts"].add_task(
+            "Lines modified:", total=None
         )
         return tasks
 
@@ -292,7 +291,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
                     mod_line = re.sub(self.pattern, self.replacement, line)
                     if mod_line != line:
                         self.progress["counts"].advance(
-                            self.tasks["total_replacements"]
+                            self.tasks["lines_changed_total"]
                         )
                     output_fh.write(mod_line)
             else:
@@ -301,7 +300,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
                         mod_line = re.sub(self.pattern, self.replacement, line)
                         if mod_line != line:
                             self.progress["counts"].advance(
-                                self.tasks["total_replacements"]
+                                self.tasks["lines_changed_total"]
                             )
                         output_fh.write(mod_line)
                     else:
