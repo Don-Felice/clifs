@@ -13,6 +13,9 @@ class FileDeleter(ClifsPlugin, PathGetterMixin):
     Delete files
     """
 
+    plugin_description = (
+        "Delete files. Supports multiple ways to select files for deletion."
+    )
     skip_preview: bool
 
     @classmethod

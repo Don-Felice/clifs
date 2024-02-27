@@ -15,9 +15,14 @@ from clifs.utils_fs import INDENT, PathGetterMixin, get_unique_path
 
 class Renamer(ClifsPlugin, PathGetterMixin):
     """
-    Regex-based renaming of files and folders.
+    Rename files or folders based on regular expressions.
     """
 
+    plugin_summary: str = "Rename files or directories using regular expressions"
+    plugin_description: str = (
+        plugin_summary
+        + ". By default a preview mode is running to prevent unpleasant surprises."
+    )
     pattern: str
     replacement: str
     rename_dirs: bool

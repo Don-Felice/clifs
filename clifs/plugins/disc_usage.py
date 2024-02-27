@@ -20,9 +20,10 @@ class UsageInfo(NamedTuple):
 
 class DiscUsageExplorer(ClifsPlugin):
     """
-    Display disk usage for one or more directories.
+    Show disk usage for directories
     """
 
+    plugin_description = "Show disc usage for one or multiple directories."
     dirs: List[str]
 
     @staticmethod

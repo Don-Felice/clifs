@@ -235,6 +235,10 @@ class FileMover(CoMo):
     Move files
     """
 
+    plugin_description = """Move files from one location to the other.
+     Supports multiple ways to select files and to deal with files already existing at
+     the target location."""
+
     def __init__(self, args: Namespace) -> None:
         self.move = True
         super().__init__(args)
@@ -244,6 +248,10 @@ class FileCopier(CoMo):
     """
     Copy files
     """
+
+    plugin_description = """Copy files from one location to the other.
+     Supports multiple ways to select files and to deal with files already existing at
+     the target location."""
 
     def __init__(self, args: Namespace) -> None:
         self.move = False

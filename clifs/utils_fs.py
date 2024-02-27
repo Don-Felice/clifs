@@ -19,7 +19,7 @@ TIME_INTERVAL_HELPTEXT = """The time interval can be given in units of:
  be interpreted as three months ago while an input of '1.5' would be interpreted as one
  and a half days ago."""
 CTIME_HELPTEXT = """Be aware that the meaning of 'ctime' depends on the operating
- system. On some systems (like Unix) it is the time of the last metadata change, and
+ system. On some systems (like Unix) it is the time of the last metadata change, while
  on others (like Windows), it is the creation time
  (see https://docs.python.org/3/library/stat.html)."""
 
@@ -48,13 +48,13 @@ class PathGetterMixin:
         parser.add_argument(
             "dir_source",
             type=Path,
-            help="Folder with files to copy/move from",
+            help="Source directory containing the files/folders to be processed.",
         )
         parser.add_argument(
             "-r",
             "--recursive",
             action="store_true",
-            help="Search recursively in source folder",
+            help="Search recursively in source directory.",
         )
         parser.add_argument(
             "-fl",
@@ -62,7 +62,7 @@ class PathGetterMixin:
             default=None,
             type=Path,
             help="Path to a txt or csv file containing a list of files to process. "
-            "In case of a CSV, separator and header can be provided additionally via "
+            "In case of a csv, separator and header can be provided additionally via "
             "the parameters `filterlistsep` and `filterlistheader`. "
             "If no header is provided, each line in the file is treated as individual "
             "file or folder name.",
@@ -72,8 +72,8 @@ class PathGetterMixin:
             "--filterlistheader",
             default=None,
             help="Header of the column to use as filter "
-            "from a csv provided as filterlist."
-            " If no header is provided, "
+            "from a csv provided as `filterlist`. "
+            "If no header is provided, "
             "each line in the file is read as individual item name.",
         )
         parser.add_argument(
@@ -86,35 +86,37 @@ class PathGetterMixin:
             "-fs",
             "--filterstring",
             default=None,
-            help="Substring identifying files to be copied. Not case sensitive.",
+            help="Substring identifying files/folders to be copied. "
+            "Not case sensitive.",
         )
         parser.add_argument(
             "-mto",
             "--mtime_stamp_older",
             default=None,
-            help="Select only files which were last modified more than the given "
-            f"period of time ago. {TIME_INTERVAL_HELPTEXT}",
+            help="Select only files/folders which were last modified more than the "
+            f"given period of time ago. {TIME_INTERVAL_HELPTEXT}",
         )
         parser.add_argument(
             "-mtn",
             "--mtime_stamp_newer",
             default=None,
-            help="Select only files which were last modified more recently than the "
-            f"given period of time ago. {TIME_INTERVAL_HELPTEXT}",
+            help="Select only files/folders which were last modified more recently "
+            f"than the given period of time ago. {TIME_INTERVAL_HELPTEXT}",
         )
         parser.add_argument(
             "-cto",
             "--ctime_stamp_older",
             default=None,
-            help="Select only files which were created/changed more than the given "
-            f"period of time ago. {TIME_INTERVAL_HELPTEXT} {CTIME_HELPTEXT}",
+            help="Select only files/folders which were created/changed more than the "
+            f"given period of time ago. {TIME_INTERVAL_HELPTEXT} {CTIME_HELPTEXT}",
         )
         parser.add_argument(
             "-ctn",
             "--ctime_stamp_newer",
             default=None,
-            help="Select only files which were created/changed more recently than the "
-            f"given period of time ago. {TIME_INTERVAL_HELPTEXT} {CTIME_HELPTEXT}",
+            help="Select only files/folders which were created/changed more recently "
+            f"than the given period of time ago. {TIME_INTERVAL_HELPTEXT} "
+            f"{CTIME_HELPTEXT}",
         )
 
     def get_paths(self) -> Tuple[List[Path], List[Path]]:

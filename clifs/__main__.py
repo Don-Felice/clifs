@@ -17,7 +17,10 @@ def main() -> None:
         set_style(f"running `clifs` version: {clifs.__version__}", "bright_black")
     )
 
-    parser = argparse.ArgumentParser(formatter_class=ClifsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        formatter_class=ClifsHelpFormatter,
+        description="Multi-platform command line interface for file system operations.",
+    )
     commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
     plugins: Dict[str, Type[ClifsPlugin]] = {}
@@ -32,7 +35,11 @@ def main() -> None:
         plugins[entry_point.name] = entry_point.load()
         subparser = commands.add_parser(
             entry_point.name,
-            help=plugins[entry_point.name].__doc__,
+            help=getattr(plugins[entry_point.name], "plugin_summary", None)
+            or plugins[entry_point.name].__doc__,
+            description=getattr(plugins[entry_point.name], "plugin_description", None)
+            or getattr(plugins[entry_point.name], "plugin_summary", None)
+            or plugins[entry_point.name].__doc__,
             formatter_class=ClifsHelpFormatter,
         )
         plugins[entry_point.name].init_parser(parser=subparser)
