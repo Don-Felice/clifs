@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+
+## v1.6.0 - Feb. 27, 2024
+
 - introduce `plugin_description` and `plugin_summary` class attributes as an option to
   define cli help texts for plugins.
 - provide plugin descriptions for all included plugins when calling `clifs {plugin} --help`

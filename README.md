@@ -31,7 +31,7 @@ clifs ren ".\some_dir" --recursive --pattern "(?<!_suffix)\.(.*)" --replacement 
 
 Output:
 
-<img src="https://github.com/Don-Felice/clifs/raw/v1.5.1/doc/imgs/example_ren.png" width="800"/>
+<img src="https://github.com/Don-Felice/clifs/raw/v1.6.0/doc/imgs/example_ren.png" width="800"/>
 
 ## Disc Usage (`du`)
 
@@ -47,7 +47,7 @@ clifs du "some\dir\on\some_drive" "some\other\dir\on\some_other_drive" "some\oth
 
 Output:
 
-<img src="https://github.com/Don-Felice/clifs/raw/v1.5.1/doc/imgs/example_du.png" width="800"/>
+<img src="https://github.com/Don-Felice/clifs/raw/v1.6.0/doc/imgs/example_du.png" width="800"/>
 
 ## Directory Tree (`tree`)
 
@@ -63,7 +63,7 @@ clifs tree .\clifs --depth 2
 
 Output:
 
-<img src="https://github.com/Don-Felice/clifs/raw/v1.5.1/doc/imgs/example_tree.png" width="800"/>
+<img src="https://github.com/Don-Felice/clifs/raw/v1.6.0/doc/imgs/example_tree.png" width="800"/>
 
 ## Streaming Editor (`sed`)
 
@@ -79,7 +79,7 @@ clifs sed ".\some\place" --pattern "(s\w*)" --replacement "no \1"  --lines 4-6 -
 
 Output:
 
-<img src="https://github.com/Don-Felice/clifs/raw/v1.5.1/doc/imgs/example_sed.png" width="800"/>
+<img src="https://github.com/Don-Felice/clifs/raw/v1.6.0/doc/imgs/example_sed.png" width="800"/>
 
 ## Copy (`cp`)
 
@@ -96,7 +96,7 @@ clifs cp ".\some_source_dir" ".\some_dest_dir" --recursive --flatten --keep_all
 
 Output:
 
-<img src="https://github.com/Don-Felice/clifs/raw/v1.5.1/doc/imgs/example_cp.png" width="800"/>
+<img src="https://github.com/Don-Felice/clifs/raw/v1.6.0/doc/imgs/example_cp.png" width="800"/>
 
 ## Move (`mv`)
 
@@ -112,7 +112,7 @@ clifs mv ".\some_source_dir" ".\some_dest_dir" --recursive --skip_existing
 ```
 
 Output:
-<img src="https://github.com/Don-Felice/clifs/raw/v1.5.1/doc/imgs/example_mv.png" width="800"/>
+<img src="https://github.com/Don-Felice/clifs/raw/v1.6.0/doc/imgs/example_mv.png" width="800"/>
 
 ## Delete (`del`)
 
@@ -129,7 +129,7 @@ clifs del ".\some_dir" --recursive --filterstring ".py"
 
 Output:
 
-<img src="https://github.com/Don-Felice/clifs/raw/v1.5.1/doc/imgs/example_del.png" width="800"/>
+<img src="https://github.com/Don-Felice/clifs/raw/v1.6.0/doc/imgs/example_del.png" width="800"/>
 
 ## Backup (`backup`)
 
@@ -146,4 +146,4 @@ clifs backup --dir_source ".\some_source_dir" --dir_dest ".\some_dest_dir" --del
 
 Output:
 
-<img src="https://github.com/Don-Felice/clifs/raw/v1.5.1/doc/imgs/example_backup.png" width="800"/>
+<img src="https://github.com/Don-Felice/clifs/raw/v1.6.0/doc/imgs/example_backup.png" width="800"/>
