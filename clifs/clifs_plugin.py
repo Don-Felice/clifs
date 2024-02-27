@@ -3,6 +3,7 @@
 
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
+from typing import Optional
 
 from clifs.utils_cli import CONSOLE
 
@@ -14,6 +15,13 @@ class ClifsPlugin(ABC):
     """
     Class to inherit for clifs plugins.
     """
+
+    # this would appear as help text for the plugin when calling `clifs --help`
+    # which, if not set, defaults to PluginClass.__doc__
+    plugin_summary: Optional[str] = None
+    # this would appear as plugin description when calling `clifs {plugin} --help`
+    # which, if not set, defaults to 'plugin_summary'
+    plugin_description: Optional[str] = None
 
     @staticmethod
     @abstractmethod

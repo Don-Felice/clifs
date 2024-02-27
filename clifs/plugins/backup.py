@@ -84,9 +84,10 @@ def list_filedirs(dir_source: Path) -> Tuple[List[Path], List[Path]]:
 
 class FileSaver(ClifsPlugin):
     """
-    Create backups from folders.
+    Create backups
     """
 
+    plugin_description = "Create backups from folders."
     dir_source: Optional[Path]
     dir_dest: Optional[Path]
     cfg_file: Optional[Path]
@@ -111,7 +112,11 @@ class FileSaver(ClifsPlugin):
             "--cfg_file",
             type=Path,
             default=None,
-            help="Path to the config file",
+            help="Path to a config file. Providing a config containing file is an "
+            "alternative to providing source and destination directories via the "
+            "command line. The config file is expected to be a CSV containing the "
+            "column headers 'source_dir' and 'dest_dir' and one directory pair per "
+            "row.",
         )
         parser.add_argument(
             "-del",
@@ -120,7 +125,7 @@ class FileSaver(ClifsPlugin):
             default=False,
             help=(
                 "Delete files which exist in destination directory but not in "
-                "the source directory"
+                "the source directory."
             ),
         )
         parser.add_argument(

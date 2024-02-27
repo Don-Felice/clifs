@@ -31,10 +31,14 @@ IO_ERROR_MESSAGE = set_style(
 
 class StreamingEditor(ClifsPlugin, PathGetterMixin):
     """
-    Base class to copy or move files.
-
+    Edit text files based on regular expressions.
     """
 
+    plugin_summary = "Edit text files based on regular expressions"
+    plugin_description: str = (
+        plugin_summary
+        + ". Runs line by line and gives a preview of the changes by default."
+    )
     files2process: List[Path]
     dir_dest: Path
     dryrun: bool

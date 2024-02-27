@@ -183,9 +183,10 @@ class Folder(Entry):
 
 class DirectoryTree(ClifsPlugin):
     """
-    Display a tree of the file system including item sizes.
+    Display a tree of the file system including size information
     """
 
+    plugin_description = "Display a tree of the file system including size information."
     root_dir: Path
     dirs_only: bool
     hide_sizes: bool
@@ -201,7 +202,7 @@ class DirectoryTree(ClifsPlugin):
             type=Path,
             default=".",
             nargs="?",
-            help="Root directory to generate tree.",
+            help="Root directory to generate the tree.",
         )
         parser.add_argument(
             "-do",
@@ -215,14 +216,16 @@ class DirectoryTree(ClifsPlugin):
             "--hide_sizes",
             action="store_true",
             default=False,
-            help="Hide size information.",
+            help="Do not show size information. Speeds up tree generation for "
+            "directories with many files, especially if a 'depth' limit is set.",
         )
         parser.add_argument(
             "-d",
             "--depth",
             type=int,
             default=None,
-            help="Max depth to which the tree is plotted. Relative to 'root_dir'",
+            help="Maximal depth to which the tree is plotted. Relative to 'root_dir'. "
+            "If not set, there will be no depth limit.",
         )
 
     def __init__(self, args: Namespace) -> None:
