@@ -100,19 +100,18 @@ class Folder(Entry):
         self.size: Optional[float] = self.get_size() if self.plot_size else None
 
     def get_children(self) -> List[Entry]:
-        children: List[Entry] = []
+        child_prefix = self.prefix
+        if self.connector == TEE:  # not last dir
+            child_prefix += PIPE_PREFIX
+        elif self.connector == ELBOW:  # last dir
+            child_prefix += SPACE_PREFIX
 
+        children: List[Entry] = []
         items = list(self.path.iterdir())
         try:
             items = sorted(items, key=lambda item: (not item.is_file(), str(item)))
             for num_item, item in enumerate(items, 1):
                 child_connector = TEE if num_item < len(items) else ELBOW
-
-                child_prefix = self.prefix
-                if self.connector == TEE:  # not last dir
-                    child_prefix += PIPE_PREFIX
-                elif self.connector == ELBOW:  # last dir
-                    child_prefix += SPACE_PREFIX
 
                 if item.is_file() and (not self.dirs_only or self.plot_size):
                     children.append(
