@@ -1,6 +1,5 @@
 """Main entry point calling plugins"""
 
-
 import argparse
 import sys
 from importlib.metadata import entry_points

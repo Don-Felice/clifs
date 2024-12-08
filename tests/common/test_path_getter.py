@@ -1,6 +1,5 @@
 """Test the path getter mixin class"""
 
-
 import os
 import time
 from datetime import datetime

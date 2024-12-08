@@ -2,6 +2,8 @@
 
 ## Unreleased Changes
 
+- sub-group optional file selection arguments in "optional arguments - file selection"
+- update ruff to >=0.8.2
 
 ## v1.6.0 - Feb. 27, 2024
 

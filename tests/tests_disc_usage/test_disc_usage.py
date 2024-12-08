@@ -1,6 +1,5 @@
 """Test the disc usage plugin"""
 
-
 import re
 from argparse import Namespace
 from unittest.mock import patch

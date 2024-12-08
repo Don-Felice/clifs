@@ -1,6 +1,5 @@
 """Clifs plugin to show disc usage"""
 
-
 import shutil
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
