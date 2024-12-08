@@ -45,18 +45,20 @@ class PathGetterMixin:
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
+        group = parser.add_argument_group("optional arguments - file selection")
+
         parser.add_argument(
             "dir_source",
             type=Path,
             help="Source directory containing the files/folders to be processed.",
         )
-        parser.add_argument(
+        group.add_argument(
             "-r",
             "--recursive",
             action="store_true",
             help="Search recursively in source directory.",
         )
-        parser.add_argument(
+        group.add_argument(
             "-fl",
             "--filterlist",
             default=None,
@@ -67,7 +69,7 @@ class PathGetterMixin:
             "If no header is provided, each line in the file is treated as individual "
             "file or folder name.",
         )
-        parser.add_argument(
+        group.add_argument(
             "-flh",
             "--filterlistheader",
             default=None,
@@ -76,41 +78,41 @@ class PathGetterMixin:
             "If no header is provided, "
             "each line in the file is read as individual item name.",
         )
-        parser.add_argument(
+        group.add_argument(
             "-fls",
             "--filterlistsep",
             default=",",
             help="Separator to use for csv provided as filter list.",
         )
-        parser.add_argument(
+        group.add_argument(
             "-fs",
             "--filterstring",
             default=None,
             help="Substring identifying files/folders to be copied. "
             "Not case sensitive.",
         )
-        parser.add_argument(
+        group.add_argument(
             "-mto",
             "--mtime_stamp_older",
             default=None,
             help="Select only files/folders which were last modified more than the "
             f"given period of time ago. {TIME_INTERVAL_HELPTEXT}",
         )
-        parser.add_argument(
+        group.add_argument(
             "-mtn",
             "--mtime_stamp_newer",
             default=None,
             help="Select only files/folders which were last modified more recently "
             f"than the given period of time ago. {TIME_INTERVAL_HELPTEXT}",
         )
-        parser.add_argument(
+        group.add_argument(
             "-cto",
             "--ctime_stamp_older",
             default=None,
             help="Select only files/folders which were created/changed more than the "
             f"given period of time ago. {TIME_INTERVAL_HELPTEXT} {CTIME_HELPTEXT}",
         )
-        parser.add_argument(
+        group.add_argument(
             "-ctn",
             "--ctime_stamp_newer",
             default=None,
