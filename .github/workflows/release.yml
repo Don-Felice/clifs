@@ -42,7 +42,7 @@ jobs:
           # check for "## Unreleased Changes" section in changelog if it exists
           [[ -f CHANGELOG.md ]] && 
           { grep -q "## Unreleased Changes" CHANGELOG.md || 
-          { echo "Did not find '##Unreleased Changes' section in changelog. \
+          { echo "Did not find '## Unreleased Changes' section in changelog. \
           Please document your changes." && exit 1; }; }
 
       - name: Bump version and update changelog
