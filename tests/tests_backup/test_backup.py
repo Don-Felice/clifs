@@ -1,6 +1,5 @@
 """Test the backup plugin"""
 
-
 from pathlib import Path
 from unittest.mock import patch
 

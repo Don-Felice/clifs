@@ -1,6 +1,5 @@
 """Definition of the ClifsPlugin interface"""
 
-
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
 from typing import Optional

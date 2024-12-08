@@ -43,7 +43,7 @@ dependencies = [
     "pytest-cov",
     "mypy",
     "pylint",
-    "ruff",
+    "ruff>=0.8.2",
     "types-python-dateutil",
     "clifs @ file://{root}",
 ]
@@ -51,7 +51,7 @@ dependencies = [
 test = "pytest {args}"
 lint = [
     "ruff format --check .",
-    "ruff clifs",
+    "ruff check clifs",
     "pylint clifs",
     "mypy clifs --strict",
 ]
@@ -72,7 +72,7 @@ exclude_lines = ["no cov", "if __name__ == .__main__.:", "if TYPE_CHECKING:"]
 disable = ["missing-function-docstring", "duplicate-code"]
 
 [tool.ruff]
-extend-select = [
+lint.extend-select = [
     "I",   # sorting of imports 
     "W",   # pycodestyle warnings
     "S",   # flake8-bandit security testing

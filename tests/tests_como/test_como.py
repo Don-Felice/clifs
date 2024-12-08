@@ -1,6 +1,5 @@
 """Test the copy and move plugins"""
 
-
 from unittest.mock import patch
 
 from clifs.__main__ import main

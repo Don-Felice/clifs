@@ -1,6 +1,5 @@
 """Test the delete plugin"""
 
-
 from unittest.mock import patch
 
 from clifs.__main__ import main

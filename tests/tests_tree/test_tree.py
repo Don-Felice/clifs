@@ -1,6 +1,5 @@
 """Test the tree plugin"""
 
-
 import re
 from argparse import Namespace
 from unittest.mock import patch
