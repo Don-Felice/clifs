@@ -83,9 +83,9 @@ def test_tree(dirs_source, trees_source_dir, dirs_only, hide_sizes, depth):
         act_tree = tree.__str__().splitlines()
         for lineidx, line in enumerate(act_tree):
             try:
-                assert escape_rich_style(line) == exp_tree[lineidx].replace(
-                    "\n", ""
-                ), f"Trees for {folder} are not identical."
+                assert escape_rich_style(line) == exp_tree[lineidx].replace("\n", ""), (
+                    f"Trees for {folder} are not identical."
+                )
             except AssertionError:
                 print(f"{exp_tree=}")
                 print(f"{act_tree=}")

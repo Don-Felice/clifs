@@ -7,7 +7,7 @@ from typing import Dict, Type
 
 import clifs
 from clifs import ClifsPlugin
-from clifs.utils_cli import CONSOLE, ClifsHelpFormatter, set_style
+from clifs.utils_cli import CONSOLE, ClifsHelpFormatter
 
 
 def main() -> None:

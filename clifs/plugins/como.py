@@ -183,7 +183,7 @@ class CoMo(ClifsPlugin, PathGetterMixin):
                 if filepath_dest.exists():
                     if self.skip_existing:
                         txt_report = set_style(
-                            f"Skipped as already present: " f"{file.name}",
+                            f"Skipped as already present: {file.name}",
                             "warning",
                         )
                         skip = True

@@ -28,16 +28,15 @@ def escape_rich_style(string):
 
 
 def check_mtime_consistency(file1, file2):
-    assert (
-        abs(os.path.getmtime(file1) - os.path.getmtime(file2)) <= 1
-    ), f"File modification time is not consistent for file {file1}"
+    assert abs(os.path.getmtime(file1) - os.path.getmtime(file2)) <= 1, (
+        f"File modification time is not consistent for file {file1}"
+    )
 
 
 def assert_files_present(dir_source, dir_ref, check_mtime=True):
     print("---------------------")
     print(
-        f"checking consistencies of folders:"
-        f"\n{str(dir_source)}\nand\n{str(dir_ref)}."
+        f"checking consistencies of folders:\n{str(dir_source)}\nand\n{str(dir_ref)}."
     )
     list_files_source = [x for x in dir_source.rglob("*") if not x.is_dir()]
     for cur_file_source in list_files_source:
@@ -46,9 +45,9 @@ def assert_files_present(dir_source, dir_ref, check_mtime=True):
         )
         print(f"checking file: {cur_file_source}")
         # check for existence
-        assert (
-            cur_file_dest.exists()
-        ), f"file {cur_file_source.name} from {dir_source} not existent in {dir_ref}."
+        assert cur_file_dest.exists(), (
+            f"file {cur_file_source.name} from {dir_source} not existent in {dir_ref}."
+        )
         if check_mtime:
             # check for proper updating
             check_mtime_consistency(cur_file_source, cur_file_dest)

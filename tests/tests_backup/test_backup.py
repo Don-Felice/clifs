@@ -84,13 +84,13 @@ def test_backup(
         for idx_dir in range(len(dirs_source)):
             assert_files_present(dirs_source[idx_dir], dirs_dest[idx_dir])
             if delete:
-                assert not substr_in_dir_names(
-                    dirs_dest[idx_dir]
-                ), "Files only present in destination dir have not been deleted."
+                assert not substr_in_dir_names(dirs_dest[idx_dir]), (
+                    "Files only present in destination dir have not been deleted."
+                )
             else:
-                assert substr_in_dir_names(
-                    dirs_dest[idx_dir]
-                ), "Files only present in destination dir have been deleted."
+                assert substr_in_dir_names(dirs_dest[idx_dir]), (
+                    "Files only present in destination dir have been deleted."
+                )
     else:
         # check for dest dir integrity
         for idx_dir in range(len(dirs_source)):
