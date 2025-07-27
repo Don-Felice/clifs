@@ -12,14 +12,18 @@ from clifs.utils_cli import CONSOLE, ClifsHelpFormatter, set_style
 
 def main() -> None:
     """Main entry point calling plugins installed as 'clifs.plugins'"""
-    CONSOLE.print(
-        set_style(f"running `clifs` version: {clifs.__version__}", "bright_black")
-    )
-
     parser = argparse.ArgumentParser(
         formatter_class=ClifsHelpFormatter,
         description="Multi-platform command line interface for file system operations.",
     )
+    parser.add_argument(
+        "-v",
+        "--version",
+        action="store_true",
+        default=False,
+        help="Show running 'clifs' version.",
+    )
+
     commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
     plugins: Dict[str, Type[ClifsPlugin]] = {}
@@ -49,6 +53,10 @@ def main() -> None:
         sys.exit(1)
 
     args = parser.parse_args()
+    if args.version:
+        CONSOLE.print(f"clifs {clifs.__version__}")
+        if args.plugin is None:
+            sys.exit(0)
     plugin = plugins[args.plugin](args)
     plugin.run()
 
