@@ -24,15 +24,15 @@ def test_disc_usage_numbers(dirs_empty, usage_info):
         space_used = usage_explorer._dict_usage[str(dir)].used
         space_free = usage_explorer._dict_usage[str(dir)].free
 
-        assert (
-            space_total == usage_info[0]
-        ), f"Total disc space does not match: exp={usage_info[0]}, act={space_total}"
-        assert (
-            space_used == usage_info[1]
-        ), f"Used disc space does not match: exp={usage_info[1]}, act={space_used}"
-        assert (
-            space_free == usage_info[2]
-        ), f"Total disc space does not match: exp={usage_info[2]}, act={space_free}"
+        assert space_total == usage_info[0], (
+            f"Total disc space does not match: exp={usage_info[0]}, act={space_total}"
+        )
+        assert space_used == usage_info[1], (
+            f"Used disc space does not match: exp={usage_info[1]}, act={space_used}"
+        )
+        assert space_free == usage_info[2], (
+            f"Total disc space does not match: exp={usage_info[2]}, act={space_free}"
+        )
 
 
 @parametrize_default_ids("usage_info", [(1000, 400, 600), (100000, 70000, 30000)])

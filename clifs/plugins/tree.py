@@ -23,7 +23,7 @@ class Entry(ABC):
     Base class for entries in a DirectoryTree
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         path: Path,
         prefix: str = "",

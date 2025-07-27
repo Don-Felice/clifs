@@ -213,7 +213,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
         if preview_mode:
             print_line(self.console, "END OF PREVIEW")
 
-    def print_rename_message(  # pylint: disable=too-many-arguments
+    def print_rename_message(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         name_old: str,
         name_new: str,

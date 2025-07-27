@@ -69,7 +69,7 @@ class LastActionProgress(Progress):
         yield table
         for task in self.tasks:
             yield (
-                f"{task.fields.get('last_action_desc','Last action')}: "
+                f"{task.fields.get('last_action_desc', 'Last action')}: "
                 f"{task.fields.get('last_action', '-')}"
             )
 
@@ -99,7 +99,7 @@ def size2str(size: float, color: str = "cyan") -> str:
     return f"[{color}]{size:7.2f} {unit}[/{color}]"
 
 
-def cli_bar(  # pylint: disable=too-many-arguments
+def cli_bar(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     status: int,
     total: int,
     suffix: Union[str, Text] = "",

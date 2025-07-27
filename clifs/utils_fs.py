@@ -159,7 +159,7 @@ class PathGetterMixin:
 
         return files, dirs
 
-    def filter_by_time(  # pylint: disable=too-many-arguments
+    def filter_by_time(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
         files: List[Path],
         dirs: List[Path],

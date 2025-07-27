@@ -2,6 +2,8 @@
 
 ## Unreleased Changes
 
+- support "--version", "-v" parameter to show the clifs version and do not print it by
+  default
 
 ## v1.6.1 - Dec. 08, 2024
 
