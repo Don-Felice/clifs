@@ -27,28 +27,28 @@ def test_parse_line_numbers():
     sed_mock.lines = "0,4,2,9,11,333333"
     with pytest.raises(SystemExit) as e:
         StreamingEditor.parse_line_nums(sed_mock)
-    assert e.type == SystemExit
+    assert e.type is SystemExit
     assert e.value.code == 1
 
     # zero included range
     sed_mock.lines = "0-111"
     with pytest.raises(SystemExit) as e:
         StreamingEditor.parse_line_nums(sed_mock)
-    assert e.type == SystemExit
+    assert e.type is SystemExit
     assert e.value.code == 1
 
     # negatives included
     sed_mock.lines = "-5,10"
     with pytest.raises(SystemExit) as e:
         StreamingEditor.parse_line_nums(sed_mock)
-    assert e.type == SystemExit
+    assert e.type is SystemExit
     assert e.value.code == 1
 
     # improper formatting
     sed_mock.lines = "2-10-13"
     with pytest.raises(SystemExit) as e:
         StreamingEditor.parse_line_nums(sed_mock)
-    assert e.type == SystemExit
+    assert e.type is SystemExit
     assert e.value.code == 1
 
 
@@ -182,7 +182,7 @@ def test_streaming_editor(
 
     files_after_editing = [f.name for f in dirs_source[0].rglob("*") if f.is_file()]
     # check that no files got lost
-    for file in file_contents_initial.keys():
+    for file in file_contents_initial:
         assert file in files_after_editing
 
     if dont_overwrite:

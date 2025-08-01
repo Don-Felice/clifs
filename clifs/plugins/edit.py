@@ -291,7 +291,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
             "r", encoding=self.encoding
         ) as input_fh, temp_output_file.open("w", encoding=self.encoding) as output_fh:
             if self.line_nums is None:
-                for line_num, line in enumerate(input_fh, 1):
+                for line in input_fh:
                     mod_line = re.sub(self.pattern, self.replacement, line)
                     if mod_line != line:
                         self.progress["counts"].advance(

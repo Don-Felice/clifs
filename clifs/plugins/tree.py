@@ -82,14 +82,14 @@ class Folder(Entry):
         self,
         dirs_only: bool = False,
         depth_th: Optional[int] = None,
-        console: Console = Console(),
+        console: Optional[Console] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
         self.dirs_only = dirs_only
         self.depth_th = depth_th
-        self.console = console
+        self.console = console if console is not None else Console()
 
         self.have_access: bool = True
         self.children: List[Entry] = []

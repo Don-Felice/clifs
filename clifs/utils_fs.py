@@ -254,7 +254,8 @@ class PathGetterMixin:
         return res_list
 
     @staticmethod
-    def _get_time_threshold(time_input: str, now: datetime = datetime.now()) -> float:
+    def _get_time_threshold(time_input: str, now: Optional[datetime] = None) -> float:
+        now = now if now is not None else datetime.now()
         try:
             if "." in time_input:
                 raise ValueError()
