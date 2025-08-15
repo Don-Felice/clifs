@@ -112,6 +112,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
     ) -> None:
         self.counter.clear()
         self.counter["paths_total"] = len(paths)
+        self.counter["paths_processed"] = 0
 
         self.console.print(f"Renaming {self.counter['paths_total']} {path_type}.")
         paths_to_be_added: Set[Path] = set()
@@ -119,8 +120,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
         if preview_mode:
             print_line(self.console, "PREVIEW")
 
-        num_path = 0
-        for num_path, path in enumerate(paths, 1):
+        for self.counter["paths_processed"], path in enumerate(paths, 1):
             name_old = path.name
             name_new = re.sub(self.pattern, self.replacement, name_old)
             messages: List[Text] = []
@@ -139,7 +139,6 @@ class Renamer(ClifsPlugin, PathGetterMixin):
                 self.print_rename_message(
                     name_old,
                     name_new,
-                    num_path,
                     add_messages=messages,
                     preview_mode=preview_mode,
                 )
@@ -167,7 +166,6 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             self.print_rename_message(
                 name_old,
                 name_new,
-                num_path,
                 add_messages=messages,
                 preview_mode=preview_mode,
             )
@@ -207,18 +205,18 @@ class Renamer(ClifsPlugin, PathGetterMixin):
 
         if not preview_mode:
             self.console.print(
-                f"Hurray, {num_path} {path_type} have been processed, "
-                f"{self.counter['paths_renamed']} have been renamed."
+                f"Hurray, {self.counter['paths_processed']} {path_type} have been "
+                f"processed, {self.counter['paths_renamed']} have been renamed."
             )
         if preview_mode:
             print_line(self.console, "END OF PREVIEW")
 
-    def print_rename_message(  # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def print_rename_message(
         self,
         name_old: str,
         name_new: str,
-        num_path: int,
         add_messages: List[Text],
+        *,
         preview_mode: bool = False,
     ) -> None:
         indent = 2
@@ -242,7 +240,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             self.console.print(print_message)
         else:
             cli_bar(
-                num_path,
+                self.counter["paths_processed"],
                 self.counter["paths_total"],
                 suffix=print_message,
                 console=self.console,
