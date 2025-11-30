@@ -78,6 +78,11 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             self.dirs = self.sort_paths(self.dirs)
         self.highlight_match = MatchHighlighter(pattern=self.pattern)
 
+    def ask_to_continue(self) -> None:
+        if not user_query('If you want to apply renaming, give me a "yes" or "y" now!'):
+            self.console.print("Will not rename for now. See you soon.")
+            sys.exit(0)
+
     def run(self) -> None:
         if not self.rename_dirs:
             if not self.files:
@@ -85,11 +90,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             else:
                 if not self.skip_preview:
                     self.rename(self.files, path_type="files", preview_mode=True)
-                    if not user_query(
-                        'If you want to apply renaming, give me a "yes" or "y" now!'
-                    ):
-                        self.console.print("Will not rename for now. See you soon.")
-                        sys.exit(0)
+                    self.ask_to_continue()
                 self.rename(self.files, path_type="files", preview_mode=False)
         else:
             if not self.dirs:
@@ -97,11 +98,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             else:
                 if not self.skip_preview:
                     self.rename(self.dirs, path_type="dirs", preview_mode=True)
-                    if not user_query(
-                        'If you want to apply renaming, give me a "yes" or "y" now!'
-                    ):
-                        self.console.print("Will not rename for now. See you soon.")
-                        sys.exit(0)
+                    self.ask_to_continue()
                 self.rename(self.dirs, path_type="dirs", preview_mode=False)
 
     def rename(
@@ -208,7 +205,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
                 f"Hurray, {self.counter['paths_processed']} {path_type} have been "
                 f"processed, {self.counter['paths_renamed']} have been renamed."
             )
-        if preview_mode:
+        else:
             print_line(self.console, "END OF PREVIEW")
 
     def print_rename_message(

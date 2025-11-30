@@ -54,7 +54,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
-        # add args from FileGetterMixin to arg parser
+        # add args from PathGetterMixin to arg parser
         super().init_parser_mixin(parser)
 
         parser.add_argument(
@@ -191,7 +191,6 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
                 line_nums = range(range_min, range_max + 1)
             elif "," in self.lines:
                 line_nums = list(map(int, self.lines.split(",")))
-
             else:
                 line_nums = [int(self.lines)]
 
