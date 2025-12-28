@@ -1,7 +1,6 @@
 import re
-import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import MagicMock, Mock, call, mock_open, patch
 
 import pytest
 
@@ -70,7 +69,7 @@ def test_replace(pattern, replacement, line_nums):
 
     with patch(
         "pathlib.Path.open",
-        unittest.mock.mock_open(read_data="".join(file_content)),
+        mock_open(read_data="".join(file_content)),
     ) as m:
         StreamingEditor.replace(sed_mock, Path("some_file.txt"))
 
@@ -112,7 +111,7 @@ def test_preview_replace(capsys, pattern, replacement, line_nums, max_previews):
 
     with patch(
         "pathlib.Path.open",
-        unittest.mock.mock_open(read_data="".join(file_content)),
+        mock_open(read_data="".join(file_content)),
     ) as m, patch.object(
         StreamingEditor, "get_paths", return_value=["bla", "blub"]
     ), patch.object(StreamingEditor, "parse_line_nums", return_value=line_nums):

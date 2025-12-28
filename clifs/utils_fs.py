@@ -31,14 +31,14 @@ class PathGetterMixin:
 
     dir_source: Path
     recursive: bool
-    filterlist: Path
-    filterlistheader: str
+    filterlist: Path | None
+    filterlistheader: str | None
     filterlistsep: str
-    filterstring: str
-    mtime_stamp_older: Optional[str] = None
-    mtime_stamp_newer: Optional[str] = None
-    ctime_stamp_older: Optional[str] = None
-    ctime_stamp_newer: Optional[str] = None
+    filterstring: str | None
+    mtime_stamp_older: str | None = None
+    mtime_stamp_newer: str | None = None
+    ctime_stamp_older: str | None = None
+    ctime_stamp_newer: str | None = None
 
     @staticmethod
     def init_parser_mixin(parser: ArgumentParser) -> None:
@@ -232,6 +232,12 @@ class PathGetterMixin:
         return files, dirs
 
     def _list_from_csv(self) -> List[str]:
+        if not isinstance(self.filterlist, Path):
+            msg = (
+                "Expected type `pathlib.Path` for `filterlist`, "
+                f"got {type(self.filterlist)}."
+            )
+            raise ValueError(msg)
         if not self.filterlistheader:
             res_list = self.filterlist.open().read().splitlines()
         else:

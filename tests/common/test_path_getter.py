@@ -154,7 +154,7 @@ def test_time_filters(
         path_getter.recursive = True
         path_getter.filterlist = None
         path_getter.filterlistheader = None
-        path_getter.filterlistsep = None
+        path_getter.filterlistsep = ","
         path_getter.filterstring = None
 
         path_getter.mtime_stamp_older = str(mtime_stamp_older) + unit

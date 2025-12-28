@@ -41,20 +41,15 @@ sed = "clifs.plugins.edit:StreamingEditor"
 dependencies = [
     "pytest",
     "pytest-cov",
-    "mypy",
     "pylint",
     "ruff>=0.8.2",
+    "ty",
     "types-python-dateutil",
     "clifs @ file://{root}",
 ]
 [tool.hatch.envs.default.scripts]
 test = "pytest {args}"
-lint = [
-    "ruff format --check .",
-    "ruff check .",
-    "pylint clifs",
-    "mypy clifs --strict",
-]
+lint = ["ruff format --check .", "ruff check .", "pylint clifs", "ty check ."]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
