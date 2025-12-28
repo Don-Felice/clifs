@@ -2,6 +2,7 @@
 
 ## Unreleased Changes
 
+- Breaking: Drop support for python version <3.10
 - support "--version", "-v" parameter to show the clifs version and do not print it by
   default
 - refactor of the copy/move associated classes to follow the template pattern

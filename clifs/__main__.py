@@ -3,7 +3,6 @@
 import argparse
 import sys
 from importlib.metadata import entry_points
-from typing import Dict, Type
 
 import clifs
 from clifs import ClifsPlugin
@@ -26,13 +25,8 @@ def main() -> None:
 
     commands = parser.add_subparsers(title="Available plugins", dest="plugin")
 
-    plugins: Dict[str, Type[ClifsPlugin]] = {}
-
-    # depending on Python version 'entry_points' returns a dict or 'EntryPoints' object
-    if sys.version_info < (3, 10):
-        plugin_entry_points = entry_points()["clifs.plugins"]
-    else:
-        plugin_entry_points = entry_points().select(group="clifs.plugins")
+    plugins: dict[str, type[ClifsPlugin]] = {}
+    plugin_entry_points = entry_points().select(group="clifs.plugins")
 
     for entry_point in plugin_entry_points:
         plugins[entry_point.name] = entry_point.load()

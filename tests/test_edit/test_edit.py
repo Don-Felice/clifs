@@ -109,12 +109,14 @@ def test_preview_replace(capsys, pattern, replacement, line_nums, max_previews):
         max_previews=max_previews,
     )
 
-    with patch(
-        "pathlib.Path.open",
-        mock_open(read_data="".join(file_content)),
-    ) as m, patch.object(
-        StreamingEditor, "get_paths", return_value=["bla", "blub"]
-    ), patch.object(StreamingEditor, "parse_line_nums", return_value=line_nums):
+    with (
+        patch(
+            "pathlib.Path.open",
+            mock_open(read_data="".join(file_content)),
+        ) as m,
+        patch.object(StreamingEditor, "get_paths", return_value=["bla", "blub"]),
+        patch.object(StreamingEditor, "parse_line_nums", return_value=line_nums),
+    ):
         sed = StreamingEditor(mock_args)
         StreamingEditor.preview_replace(sed, Path("some_file.txt"))
 

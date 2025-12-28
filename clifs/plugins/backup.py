@@ -6,7 +6,7 @@ import sys
 import time
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Dict, List, NamedTuple, Optional, Tuple
+from typing import NamedTuple
 
 from rich.live import Live
 from rich.panel import Panel
@@ -32,7 +32,7 @@ class DirPair(NamedTuple):
 
 def conditional_copy(
     path_source: Path, path_dest: Path, dry_run: bool = False
-) -> Optional[str]:
+) -> str | None:
     """
     Copy only if dest file does not exist or is older than the source file.
     """
@@ -49,7 +49,7 @@ def conditional_copy(
 
 
 def conditional_delete(
-    path_source: Path, path_dest: Path, list_source: List[Path], dry_run: bool = False
+    path_source: Path, path_dest: Path, list_source: list[Path], dry_run: bool = False
 ) -> int:
     """
     Delete only if `path_source` is not in `list_source`.
@@ -65,7 +65,7 @@ def conditional_delete(
     return 0
 
 
-def list_filedirs(dir_source: Path) -> Tuple[List[Path], List[Path]]:
+def list_filedirs(dir_source: Path) -> tuple[list[Path], list[Path]]:
     """
     List files and directories in a source dir.
     """
@@ -88,9 +88,9 @@ class FileSaver(ClifsPlugin):
     """
 
     plugin_description = "Create backups from folders."
-    dir_source: Optional[Path]
-    dir_dest: Optional[Path]
-    cfg_file: Optional[Path]
+    dir_source: Path | None
+    dir_dest: Path | None
+    cfg_file: Path | None
     delete: bool
     verbose: bool
     dry_run: bool
@@ -191,8 +191,8 @@ class FileSaver(ClifsPlugin):
         )
 
     def get_backup_tasks(
-        self, progress: Dict[str, Progress], files_total: int
-    ) -> Dict[str, TaskID]:
+        self, progress: dict[str, Progress], files_total: int
+    ) -> dict[str, TaskID]:
         return {
             "progress_backup": progress["overall"].add_task(
                 "Storing data:  ", total=files_total, last_action="-"
@@ -212,8 +212,8 @@ class FileSaver(ClifsPlugin):
         }
 
     def get_delete_tasks(
-        self, progress: Dict[str, Progress], files_total: int, dirs_total: int
-    ) -> Dict[str, TaskID]:
+        self, progress: dict[str, Progress], files_total: int, dirs_total: int
+    ) -> dict[str, TaskID]:
         return {
             "progress_delete_files": progress["overall"].add_task(
                 "Deleting files:",
@@ -278,9 +278,9 @@ class FileSaver(ClifsPlugin):
         print_line(console=self.console)
 
     def copy_data(
-        self, dir_source: Path, dir_dest: Path, files_source: List[Path]
+        self, dir_source: Path, dir_dest: Path, files_source: list[Path]
     ) -> None:
-        progress: Dict[str, Progress] = {
+        progress: dict[str, Progress] = {
             "counts": get_count_progress(),
             "overall": get_last_action_progress(),
         }
@@ -335,12 +335,12 @@ class FileSaver(ClifsPlugin):
         self,
         dir_source: Path,
         dir_dest: Path,
-        files_source: List[Path],
-        dirs_source: List[Path],
+        files_source: list[Path],
+        dirs_source: list[Path],
     ) -> None:
         files_dest, dirs_dest = list_filedirs(dir_dest)
 
-        progress: Dict[str, Progress] = {
+        progress: dict[str, Progress] = {
             "counts": get_count_progress(),
             "overall": get_last_action_progress(),
         }

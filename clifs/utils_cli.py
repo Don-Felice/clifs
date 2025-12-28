@@ -1,7 +1,7 @@
 """Utilities for the command line interface"""
 
 import argparse
-from typing import Iterable, Optional, Union
+from collections.abc import Iterable
 
 from rich.console import Console, RenderableType
 from rich.highlighter import Highlighter
@@ -102,10 +102,10 @@ def size2str(size: float, color: str = "cyan") -> str:
 def cli_bar(  # pylint: disable=too-many-arguments, too-many-positional-arguments
     status: int,
     total: int,
-    suffix: Union[str, Text] = "",
+    suffix: str | Text = "",
     print_out: bool = True,
     bar_len: int = 20,
-    console: Optional[Console] = None,
+    console: Console | None = None,
 ) -> str:
     """Create progress bar and either print directly to console or return as string.
 

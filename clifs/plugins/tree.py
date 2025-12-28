@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any
 
 from rich.console import Console
 
@@ -38,14 +38,14 @@ class Entry(ABC):
         self.plot_size = plot_size
 
         self.name: str = self.path.name
-        self.size: Optional[float] = None
+        self.size: float | None = None
 
     @abstractmethod
     def __str__(self) -> str:
         raise NotImplementedError
 
     @abstractmethod
-    def get_size(self) -> Optional[float]:
+    def get_size(self) -> float | None:
         """Get the overall size of the entry"""
         raise NotImplementedError
 
@@ -55,9 +55,9 @@ class File(Entry):
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.size: Optional[float] = self.get_size() if self.plot_size else None
+        self.size: float | None = self.get_size() if self.plot_size else None
 
-    def get_size(self) -> Optional[float]:
+    def get_size(self) -> float | None:
         try:
             return self.path.stat().st_size
         except FileNotFoundError:
@@ -81,8 +81,8 @@ class Folder(Entry):
     def __init__(
         self,
         dirs_only: bool = False,
-        depth_th: Optional[int] = None,
-        console: Optional[Console] = None,
+        depth_th: int | None = None,
+        console: Console | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -92,21 +92,21 @@ class Folder(Entry):
         self.console = console if console is not None else Console()
 
         self.have_access: bool = True
-        self.children: List[Entry] = []
+        self.children: list[Entry] = []
 
         if (self.depth_th is None or self.depth < self.depth_th) or self.plot_size:
             self.children = self.get_children()
 
-        self.size: Optional[float] = self.get_size() if self.plot_size else None
+        self.size: float | None = self.get_size() if self.plot_size else None
 
-    def get_children(self) -> List[Entry]:
+    def get_children(self) -> list[Entry]:
         child_prefix = self.prefix
         if self.connector == TEE:  # not last dir
             child_prefix += PIPE_PREFIX
         elif self.connector == ELBOW:  # last dir
             child_prefix += SPACE_PREFIX
 
-        children: List[Entry] = []
+        children: list[Entry] = []
         items = list(self.path.iterdir())
         try:
             items = sorted(items, key=lambda item: (not item.is_file(), str(item)))
@@ -149,7 +149,7 @@ class Folder(Entry):
             self.have_access = False
             return []
 
-    def get_size(self) -> Optional[float]:
+    def get_size(self) -> float | None:
         if not self.have_access:
             return None
         size = 0.0

@@ -145,8 +145,9 @@ def test_time_filters(
     unit = "d"
     time_stamp = time.time() - DELTA * 60 * 60 * 24
 
-    with patch.object(os.stat_result, "st_ctime", time_stamp), patch.object(
-        os.stat_result, "st_mtime", time_stamp
+    with (
+        patch.object(os.stat_result, "st_ctime", time_stamp),
+        patch.object(os.stat_result, "st_mtime", time_stamp),
     ):
         path_getter = PathGetterMixin()
 

@@ -4,8 +4,9 @@ import shutil
 import sys
 from abc import ABC
 from argparse import ArgumentParser, Namespace
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, List, NamedTuple
+from typing import Any, ClassVar, NamedTuple
 
 from rich.live import Live
 from rich.panel import Panel
@@ -38,7 +39,7 @@ class CoMo(ClifsPlugin, PathGetterMixin, ABC):  # pylint: disable=too-many-insta
 
     """
 
-    files2process: List[Path]
+    files2process: list[Path]
     dir_dest: Path
     skip_existing: bool
     keep_all: bool
@@ -116,7 +117,7 @@ class CoMo(ClifsPlugin, PathGetterMixin, ABC):  # pylint: disable=too-many-insta
         self.files2process, _ = self.get_paths()
 
         # define progress
-        self.progress: Dict[str, Progress] = {
+        self.progress: dict[str, Progress] = {
             "counts": get_count_progress(),
             "overall": get_last_action_progress(),
         }
@@ -143,7 +144,7 @@ class CoMo(ClifsPlugin, PathGetterMixin, ABC):  # pylint: disable=too-many-insta
         self.dir_dest.parent.mkdir(exist_ok=True, parents=True)
         self.como()
 
-    def get_tasks(self) -> Dict[str, TaskID]:
+    def get_tasks(self) -> dict[str, TaskID]:
         # define overall progress task
         tasks = {
             "progress": self.progress["overall"].add_task(

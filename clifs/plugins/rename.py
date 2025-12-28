@@ -5,7 +5,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from collections import Counter
 from pathlib import Path
-from typing import List, Literal, Set
+from typing import Literal
 
 from rich.text import Text
 
@@ -104,7 +104,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
 
     def rename(
         self,
-        paths: List[Path],
+        paths: list[Path],
         path_type: Literal["files", "dirs"],
         preview_mode: bool = True,
     ) -> None:
@@ -113,15 +113,15 @@ class Renamer(ClifsPlugin, PathGetterMixin):
         self.counter["paths_processed"] = 0
 
         self.console.print(f"Renaming {self.counter['paths_total']} {path_type}.")
-        paths_to_be_added: Set[Path] = set()
-        paths_to_be_deleted: Set[Path] = set()
+        paths_to_be_added: set[Path] = set()
+        paths_to_be_deleted: set[Path] = set()
         if preview_mode:
             print_line(self.console, "PREVIEW")
 
         for self.counter["paths_processed"], path in enumerate(paths, 1):
             name_old = path.name
             name_new = re.sub(self.pattern, self.replacement, name_old)
-            messages: List[Text] = []
+            messages: list[Text] = []
 
             # skip items if renaming would result in bad characters
             found_bad_chars = self.find_bad_char(name_new)
@@ -213,7 +213,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
         self,
         name_old: str,
         name_new: str,
-        add_messages: List[Text],
+        add_messages: list[Text],
         *,
         preview_mode: bool = False,
     ) -> None:
@@ -245,7 +245,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             )
 
     @staticmethod
-    def find_bad_char(string: str) -> List[str]:
+    def find_bad_char(string: str) -> list[str]:
         """Check stings for characters causing problems in Windows file system."""
         bad_chars = r"~“#%&*:<>?/\{|}"
         return [x for x in bad_chars if x in string]

@@ -2,7 +2,6 @@
 
 import shutil
 from pathlib import Path
-from typing import List
 
 import pytest
 
@@ -17,7 +16,7 @@ def dir_testrun(tmp_path: Path) -> Path:
 
 
 @pytest.fixture(scope="function")
-def dirs_source(dir_testrun, num_dirs=2) -> List[Path]:
+def dirs_source(dir_testrun, num_dirs=2) -> list[Path]:
     dirs_res = [
         (dir_testrun / "data" / ("dir_source_" + str(i)))
         for i in range(1, num_dirs + 1)

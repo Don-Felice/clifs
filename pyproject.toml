@@ -15,7 +15,7 @@ classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["file system", "command line"]
 dependencies = ["rich>=13.7.0", "python-dateutil"]
 dynamic = ["version"]
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 
 [project.urls]
 "Source code" = "https://github.com/Don-Felice/clifs"
@@ -73,7 +73,9 @@ lint.extend-select = [
     "S",   # flake8-bandit security testing
     "SIM", # simplify
     "B",   # Bugbear
+    "UP",  # Upgrade
 ]
+target-version = "py310"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [
