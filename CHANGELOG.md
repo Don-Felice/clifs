@@ -2,6 +2,9 @@
 
 ## Unreleased Changes
 
+
+## v2.0.0 - Jan. 11, 2026
+
 - Breaking: Drop support for python version <3.10
 - support "--version", "-v" parameter to show the clifs version and do not print it by
   default
