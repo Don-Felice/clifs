@@ -2,11 +2,8 @@
 
 import os
 import time
-from datetime import datetime
-from pathlib import Path
+from datetime import datetime, timedelta
 from unittest.mock import patch
-
-from dateutil.relativedelta import relativedelta
 
 from clifs.utils_fs import PathGetterMixin
 from tests.common.utils_testing import parametrize_default_ids
@@ -82,6 +79,13 @@ def test_path_getter(
                 ]
 
 
+def last_day_of_month(any_day):
+    # The day 28 exists in every month. 4 days later, it's always next month
+    next_month = any_day.replace(day=28) + timedelta(days=4)
+    # subtracting the number of the current day brings us back one month
+    return next_month - timedelta(days=next_month.day)
+
+
 @parametrize_default_ids("now_stamp", [1e9, datetime.now().timestamp()])
 @parametrize_default_ids("quantity", [1, 7, 12])
 @parametrize_default_ids("unit", ["s", "min", "h", "mon", "a", "y", "d", ""])
@@ -105,7 +109,18 @@ def test_time_parsing(quantity, unit, now_stamp):
         if th_month < 1:
             th_month += 12
             th_year -= 1
-        assert th_stamp == now.replace(year=th_year, month=th_month).timestamp()
+        try:
+            ref_stamp = now.replace(year=th_year, month=th_month).timestamp()
+        except ValueError:
+            # the take the last day of the month in case it does not have as many days as the now month
+            ref_stamp = now.replace(
+                year=th_year,
+                month=th_month,
+                day=last_day_of_month(
+                    now.replace(year=th_year, month=th_month, day=1)
+                ).day,
+            ).timestamp()
+        assert th_stamp == ref_stamp
     elif unit == "a" or unit == "y":
         assert th_stamp == now.replace(year=now.year - quantity).timestamp()
 
@@ -130,8 +145,9 @@ def test_time_filters(
     unit = "d"
     time_stamp = time.time() - DELTA * 60 * 60 * 24
 
-    with patch.object(os.stat_result, "st_ctime", time_stamp), patch.object(
-        os.stat_result, "st_mtime", time_stamp
+    with (
+        patch.object(os.stat_result, "st_ctime", time_stamp),
+        patch.object(os.stat_result, "st_mtime", time_stamp),
     ):
         path_getter = PathGetterMixin()
 
@@ -139,7 +155,7 @@ def test_time_filters(
         path_getter.recursive = True
         path_getter.filterlist = None
         path_getter.filterlistheader = None
-        path_getter.filterlistsep = None
+        path_getter.filterlistsep = ","
         path_getter.filterstring = None
 
         path_getter.mtime_stamp_older = str(mtime_stamp_older) + unit

@@ -38,13 +38,14 @@ def test_disc_usage_numbers(dirs_empty, usage_info):
 @parametrize_default_ids("usage_info", [(1000, 400, 600), (100000, 70000, 30000)])
 def test_disc_usage_output(dirs_empty, usage_info, capfd):
     # run the actual function to test
-    with patch("sys.argv", ["clifs", "du"] + [str(x) for x in dirs_empty]), patch(
-        "shutil.disk_usage", return_value=(usage_info)
+    with (
+        patch("sys.argv", ["clifs", "du"] + [str(x) for x in dirs_empty]),
+        patch("shutil.disk_usage", return_value=(usage_info)),
     ):
         main()
 
     captured = capfd.readouterr()
-    for sp_type, sp_val in zip(["total", "used", "free"], usage_info):
+    for sp_type, sp_val in zip(["total", "used", "free"], usage_info, strict=True):
         assert len(
             re.findall(
                 rf"{sp_type}: *{sp_val / 1024:.2f} KB", escape_rich_style(captured.out)

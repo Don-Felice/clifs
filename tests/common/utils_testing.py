@@ -68,7 +68,7 @@ def parametrize_default_ids(argname, argvalues, indirect=False, ids=None, scope=
         argnames = argname.split(",") if isinstance(argname, str) else argname
         if len(argnames) > 1:
             ids = [
-                "-".join(f"{k}={v}" for k, v in zip(argnames, p_argvalues))
+                "-".join(f"{k}={v}" for k, v in zip(argnames, p_argvalues, strict=True))
                 for p_argvalues in argvalues
             ]
         else:

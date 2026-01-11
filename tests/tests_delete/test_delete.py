@@ -11,8 +11,9 @@ def test_delete(dirs_dest, filter_str):
     # run the actual function to test
 
     for dir in dirs_dest:
-        with patch("sys.argv", ["clifs", "del", str(dir), "--recursive"]), patch(
-            "builtins.input", return_value="yes"
+        with (
+            patch("sys.argv", ["clifs", "del", str(dir), "--recursive"]),
+            patch("builtins.input", return_value="yes"),
         ):
             main()
         print(f"Delete of {dir.name} went through.")

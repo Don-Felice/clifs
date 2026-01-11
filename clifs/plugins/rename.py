@@ -3,8 +3,9 @@
 import re
 import sys
 from argparse import ArgumentParser, Namespace
+from collections import Counter
 from pathlib import Path
-from typing import Counter, List, Literal, Set
+from typing import Literal
 
 from rich.text import Text
 
@@ -78,6 +79,11 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             self.dirs = self.sort_paths(self.dirs)
         self.highlight_match = MatchHighlighter(pattern=self.pattern)
 
+    def ask_to_continue(self) -> None:
+        if not user_query('If you want to apply renaming, give me a "yes" or "y" now!'):
+            self.console.print("Will not rename for now. See you soon.")
+            sys.exit(0)
+
     def run(self) -> None:
         if not self.rename_dirs:
             if not self.files:
@@ -85,11 +91,7 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             else:
                 if not self.skip_preview:
                     self.rename(self.files, path_type="files", preview_mode=True)
-                    if not user_query(
-                        'If you want to apply renaming, give me a "yes" or "y" now!'
-                    ):
-                        self.console.print("Will not rename for now. See you soon.")
-                        sys.exit(0)
+                    self.ask_to_continue()
                 self.rename(self.files, path_type="files", preview_mode=False)
         else:
             if not self.dirs:
@@ -97,33 +99,29 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             else:
                 if not self.skip_preview:
                     self.rename(self.dirs, path_type="dirs", preview_mode=True)
-                    if not user_query(
-                        'If you want to apply renaming, give me a "yes" or "y" now!'
-                    ):
-                        self.console.print("Will not rename for now. See you soon.")
-                        sys.exit(0)
+                    self.ask_to_continue()
                 self.rename(self.dirs, path_type="dirs", preview_mode=False)
 
     def rename(
         self,
-        paths: List[Path],
+        paths: list[Path],
         path_type: Literal["files", "dirs"],
         preview_mode: bool = True,
     ) -> None:
         self.counter.clear()
         self.counter["paths_total"] = len(paths)
+        self.counter["paths_processed"] = 0
 
         self.console.print(f"Renaming {self.counter['paths_total']} {path_type}.")
-        paths_to_be_added: Set[Path] = set()
-        paths_to_be_deleted: Set[Path] = set()
+        paths_to_be_added: set[Path] = set()
+        paths_to_be_deleted: set[Path] = set()
         if preview_mode:
             print_line(self.console, "PREVIEW")
 
-        num_path = 0
-        for num_path, path in enumerate(paths, 1):
+        for self.counter["paths_processed"], path in enumerate(paths, 1):
             name_old = path.name
             name_new = re.sub(self.pattern, self.replacement, name_old)
-            messages: List[Text] = []
+            messages: list[Text] = []
 
             # skip items if renaming would result in bad characters
             found_bad_chars = self.find_bad_char(name_new)
@@ -139,7 +137,6 @@ class Renamer(ClifsPlugin, PathGetterMixin):
                 self.print_rename_message(
                     name_old,
                     name_new,
-                    num_path,
                     add_messages=messages,
                     preview_mode=preview_mode,
                 )
@@ -167,7 +164,6 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             self.print_rename_message(
                 name_old,
                 name_new,
-                num_path,
                 add_messages=messages,
                 preview_mode=preview_mode,
             )
@@ -207,18 +203,18 @@ class Renamer(ClifsPlugin, PathGetterMixin):
 
         if not preview_mode:
             self.console.print(
-                f"Hurray, {num_path} {path_type} have been processed, "
-                f"{self.counter['paths_renamed']} have been renamed."
+                f"Hurray, {self.counter['paths_processed']} {path_type} have been "
+                f"processed, {self.counter['paths_renamed']} have been renamed."
             )
-        if preview_mode:
+        else:
             print_line(self.console, "END OF PREVIEW")
 
-    def print_rename_message(  # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def print_rename_message(
         self,
         name_old: str,
         name_new: str,
-        num_path: int,
-        add_messages: List[Text],
+        add_messages: list[Text],
+        *,
         preview_mode: bool = False,
     ) -> None:
         indent = 2
@@ -242,14 +238,14 @@ class Renamer(ClifsPlugin, PathGetterMixin):
             self.console.print(print_message)
         else:
             cli_bar(
-                num_path,
+                self.counter["paths_processed"],
                 self.counter["paths_total"],
                 suffix=print_message,
                 console=self.console,
             )
 
     @staticmethod
-    def find_bad_char(string: str) -> List[str]:
+    def find_bad_char(string: str) -> list[str]:
         """Check stings for characters causing problems in Windows file system."""
         bad_chars = r"~“#%&*:<>?/\{|}"
         return [x for x in bad_chars if x in string]

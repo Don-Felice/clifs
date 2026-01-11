@@ -3,7 +3,7 @@
 import shutil
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Dict, List, NamedTuple
+from typing import NamedTuple
 
 from clifs import ClifsPlugin
 from clifs.utils_cli import cli_bar, set_style, size2str
@@ -23,7 +23,7 @@ class DiscUsageExplorer(ClifsPlugin):
     """
 
     plugin_description = "Show disc usage for one or multiple directories."
-    dirs: List[str]
+    dirs: list[str]
 
     @staticmethod
     def init_parser(parser: ArgumentParser) -> None:
@@ -40,12 +40,12 @@ class DiscUsageExplorer(ClifsPlugin):
 
     def __init__(self, args: Namespace) -> None:
         super().__init__(args)
-        self._dict_usage: Dict[str, UsageInfo] = self._get_usage_info()
+        self._dict_usage: dict[str, UsageInfo] = self._get_usage_info()
 
     def run(self) -> None:
         self._print_usage_info()
 
-    def _get_usage_info(self) -> Dict[str, UsageInfo]:
+    def _get_usage_info(self) -> dict[str, UsageInfo]:
         disc_usage = {}
         for directory in self.dirs:
             disc_usage[directory] = UsageInfo(*shutil.disk_usage(directory))

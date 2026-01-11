@@ -6,7 +6,7 @@ import sys
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Set, Tuple
+from typing import Any, Literal
 
 from dateutil.relativedelta import relativedelta
 
@@ -31,14 +31,14 @@ class PathGetterMixin:
 
     dir_source: Path
     recursive: bool
-    filterlist: Path
-    filterlistheader: str
+    filterlist: Path | None
+    filterlistheader: str | None
     filterlistsep: str
-    filterstring: str
-    mtime_stamp_older: Optional[str] = None
-    mtime_stamp_newer: Optional[str] = None
-    ctime_stamp_older: Optional[str] = None
-    ctime_stamp_newer: Optional[str] = None
+    filterstring: str | None
+    mtime_stamp_older: str | None = None
+    mtime_stamp_newer: str | None = None
+    ctime_stamp_older: str | None = None
+    ctime_stamp_newer: str | None = None
 
     @staticmethod
     def init_parser_mixin(parser: ArgumentParser) -> None:
@@ -121,7 +121,7 @@ class PathGetterMixin:
             f"{CTIME_HELPTEXT}",
         )
 
-    def get_paths(self) -> Tuple[List[Path], List[Path]]:
+    def get_paths(self) -> tuple[list[Path], list[Path]]:
         """Get file and folder paths depending on set filters
 
         :return: Lists of file paths and folder paths matching the filters respectively
@@ -161,12 +161,12 @@ class PathGetterMixin:
 
     def filter_by_time(  # pylint: disable=too-many-arguments, too-many-positional-arguments
         self,
-        files: List[Path],
-        dirs: List[Path],
+        files: list[Path],
+        dirs: list[Path],
         time_stat: Literal["st_ctime", "st_mtime"],
-        delta_th_upper: Optional[str],
-        delta_th_lower: Optional[str],
-    ) -> Tuple[List[Path], List[Path]]:
+        delta_th_upper: str | None,
+        delta_th_lower: str | None,
+    ) -> tuple[list[Path], list[Path]]:
         th_upper = (
             None if not delta_th_upper else self._get_time_threshold(delta_th_upper)
         )
@@ -191,14 +191,14 @@ class PathGetterMixin:
         return files_filtered, dirs_filtered
 
     @staticmethod
-    def exit_if_nothing_to_process(items: List[Any]) -> None:
+    def exit_if_nothing_to_process(items: list[Any]) -> None:
         """Exit running process if list of files to process is empty"""
         if not items:
             CONSOLE.print("Nothing to process.")
             sys.exit(0)
 
     @staticmethod
-    def sort_paths(paths: List[Path]) -> List[Path]:
+    def sort_paths(paths: list[Path]) -> list[Path]:
         """Sort by inverse depth and str
 
         :param paths: List of paths to sort
@@ -208,8 +208,8 @@ class PathGetterMixin:
 
     @staticmethod
     def _get_paths_by_filterstring(
-        dir_source: Path, filterstring: Optional[str] = None, recursive: bool = False
-    ) -> Tuple[List[Path], List[Path]]:
+        dir_source: Path, filterstring: str | None = None, recursive: bool = False
+    ) -> tuple[list[Path], list[Path]]:
         """Get files by substring filter on the file name.
 
         :param dir_source: directory to search for files in
@@ -231,7 +231,13 @@ class PathGetterMixin:
 
         return files, dirs
 
-    def _list_from_csv(self) -> List[str]:
+    def _list_from_csv(self) -> list[str]:
+        if not isinstance(self.filterlist, Path):
+            msg = (
+                "Expected type `pathlib.Path` for `filterlist`, "
+                f"got {type(self.filterlist)}."
+            )
+            raise ValueError(msg)
         if not self.filterlistheader:
             res_list = self.filterlist.open().read().splitlines()
         else:
@@ -254,7 +260,8 @@ class PathGetterMixin:
         return res_list
 
     @staticmethod
-    def _get_time_threshold(time_input: str, now: datetime = datetime.now()) -> float:
+    def _get_time_threshold(time_input: str, now: datetime | None = None) -> float:
+        now = now if now is not None else datetime.now()
         try:
             if "." in time_input:
                 raise ValueError()
@@ -299,8 +306,8 @@ class PathGetterMixin:
 
 def get_unique_path(
     path_candidate: Path,
-    set_taken: Optional[Set[Path]] = None,
-    set_free: Optional[Set[Path]] = None,
+    set_taken: set[Path] | None = None,
+    set_free: set[Path] | None = None,
 ) -> Path:
     """Given a name candidate get a unique file name in a given directory.
 

@@ -2,9 +2,11 @@
 
 import shutil
 import sys
+from abc import ABC
 from argparse import ArgumentParser, Namespace
+from collections.abc import Callable
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, ClassVar, NamedTuple
 
 from rich.live import Live
 from rich.panel import Panel
@@ -22,20 +24,40 @@ from clifs.utils_cli import (
 from clifs.utils_fs import PathGetterMixin, get_unique_path
 
 
-class CoMo(ClifsPlugin, PathGetterMixin):
+class OperationVerbs(NamedTuple):
+    """Verbs describing the file operation to place in cli logs
+    E.g. ('copy', 'copied', copying)"""
+
+    verb: str
+    past: str
+    present: str
+
+
+class CoMo(ClifsPlugin, PathGetterMixin, ABC):  # pylint: disable=too-many-instance-attributes
     """
     Base class to copy or move files.
 
     """
 
-    files2process: List[Path]
+    files2process: list[Path]
     dir_dest: Path
     skip_existing: bool
     keep_all: bool
     flatten: bool
     terse: bool
     dryrun: bool
-    move: bool
+
+    # this needs to be implemented in all sub-classes
+    operation: Callable[[Path, Path], Any]  # pylint: disable=method-hidden
+    # this needs to be implemented in all sub-classes
+    op_description: ClassVar[OperationVerbs]
+
+    def __init_subclass__(cls, **kwargs: Any) -> None:
+        super().__init_subclass__(**kwargs)
+        for attribute in ["operation", "op_description"]:
+            if not hasattr(cls, attribute):
+                msg = f"Attribute '{attribute}' not implemented."
+                raise NotImplementedError(msg)
 
     @classmethod
     def init_parser(cls, parser: ArgumentParser) -> None:
@@ -45,7 +67,11 @@ class CoMo(ClifsPlugin, PathGetterMixin):
         # add args from FileGetterMixin to arg parser
         super().init_parser_mixin(parser)
 
-        parser.add_argument("dir_dest", type=Path, help="Folder to copy/move files to")
+        parser.add_argument(
+            "dir_dest",
+            type=Path,
+            help=f"Folder to {cls.op_description.verb} files to.",
+        )
         parser.add_argument(
             "-se",
             "--skip_existing",
@@ -78,22 +104,23 @@ class CoMo(ClifsPlugin, PathGetterMixin):
 
     def __init__(self, args: Namespace) -> None:
         super().__init__(args)
+        self.dir_source = self.dir_source.absolute()
+        self.dir_target = self.dir_dest.absolute()
 
-        if self.skip_existing and self.keep_all:
-            self.console.print(
-                "You can only choose to either skip existing files "
-                "or keep both versions. Choose wisely!"
-            )
-            sys.exit(0)
+        if self.dryrun:
+            self.operation = lambda x, y: ...
+
+        self.get_path_dest = self.get_path_dest_getting_method()
+        self.process_file = self.get_file_processing_method()
+        self.create_file = self.get_file_creation_method()
 
         self.files2process, _ = self.get_paths()
 
         # define progress
-        self.progress: Dict[str, Progress] = {
+        self.progress: dict[str, Progress] = {
             "counts": get_count_progress(),
             "overall": get_last_action_progress(),
         }
-        self.action = "Moving" if self.move else "Copying"
         self.tasks = self.get_tasks()
 
         self.progress_table = Table.grid()
@@ -117,23 +144,20 @@ class CoMo(ClifsPlugin, PathGetterMixin):
         self.dir_dest.parent.mkdir(exist_ok=True, parents=True)
         self.como()
 
-    def get_tasks(self) -> Dict[str, TaskID]:
+    def get_tasks(self) -> dict[str, TaskID]:
         # define overall progress task
         tasks = {
             "progress": self.progress["overall"].add_task(
-                f"{self.action} data:  ", total=len(self.files2process), last_action="-"
+                f"{self.op_description.present.title()} data:  ",
+                total=len(self.files2process),
+                last_action="-",
             ),
         }
 
         # define counter tasks
-        if self.move:
-            tasks["files_moved"] = self.progress["counts"].add_task(
-                "Files moved:", total=None
-            )
-        else:
-            tasks["files_copied"] = self.progress["counts"].add_task(
-                "Files copied:", total=None
-            )
+        tasks[f"files_{self.op_description.past}"] = self.progress["counts"].add_task(
+            f"Files {self.op_description.past}:", total=None
+        )
 
         if self.skip_existing:
             tasks["files_skipped"] = self.progress["counts"].add_task(
@@ -149,24 +173,92 @@ class CoMo(ClifsPlugin, PathGetterMixin):
             )
         return tasks
 
-    def create_file(self, file_src: Path, file_dest: Path) -> None:
-        if not self.flatten and not self.dryrun:
+    def get_path_dest_getting_method(
+        self,
+    ) -> Callable[[Path], Path]:
+        if self.flatten:
+            return self.get_path_dest_flat
+        return self.get_path_dest_deep
+
+    def get_path_dest_flat(self, path_file: Path) -> Path:
+        return self.dir_dest / path_file.name
+
+    def get_path_dest_deep(self, path_file: Path) -> Path:
+        return self.dir_dest / path_file.relative_to(self.dir_source)
+
+    def get_file_creation_method(self) -> Callable[[Path, Path], None]:
+        if self.flatten:
+            return self.create_file_flat
+        return self.create_file_deep
+
+    def create_file_flat(self, file_src: Path, file_dest: Path) -> None:
+        self.operation(file_src, file_dest)
+        self.progress["counts"].advance(self.tasks[f"files_{self.op_description.past}"])
+
+    def create_file_deep(self, file_src: Path, file_dest: Path) -> None:
+        if not self.dryrun:
             file_dest.parent.mkdir(exist_ok=True, parents=True)
-        if self.move:
-            if not self.dryrun:
-                shutil.move(str(file_src), str(file_dest))
-            self.progress["counts"].advance(self.tasks["files_moved"])
-        else:
-            if not self.dryrun:
-                shutil.copy2(str(file_src), str(file_dest))
-            self.progress["counts"].advance(self.tasks["files_copied"])
+        self.create_file_flat(file_src, file_dest)
+
+    def get_file_processing_method(self) -> Callable[[Path, Path], str | None]:
+        if self.skip_existing and self.keep_all:
+            self.console.print(
+                "You can only choose to either skip existing files "
+                "or keep both versions. Choose wisely!"
+            )
+            sys.exit(0)
+        if self.keep_all:
+            return self.process_file_keep_all
+        if self.skip_existing:
+            return self.process_file_skip_existing
+        return self.process_file_replace_existing
+
+    def process_file_skip_existing(self, path_src: Path, path_dest: Path) -> str | None:
+        report = None
+        if path_dest.exists():
+            report = set_style(
+                f"Skipped as already present: {path_src.name}",
+                "warning",
+            )
+            self.progress["counts"].advance(self.tasks["files_skipped"])
+            return report
+        self.create_file(path_src, path_dest)
+        return report
+
+    def process_file_keep_all(self, path_src: Path, path_dest: Path) -> str | None:
+        report = None
+        if path_dest.exists():
+            path_dest_new = get_unique_path(path_dest)
+            if path_dest_new != path_dest:
+                report = set_style(
+                    "Changed name as already present: "
+                    f"{path_dest.name} -> {path_dest_new.name}",
+                    "warning",
+                )
+                path_dest = path_dest_new
+                self.progress["counts"].advance(self.tasks["files_renamed"])
+        self.create_file(path_src, path_dest)
+        return report
+
+    def process_file_replace_existing(
+        self, path_src: Path, path_dest: Path
+    ) -> str | None:
+        report = None
+        if path_dest.exists():
+            report = set_style(
+                f"Replacing existing version for: {path_src.name}",
+                "warning",
+            )
+            self.progress["counts"].advance(self.tasks["files_replaced"])
+        self.create_file(path_src, path_dest)
+        return report
 
     def como(self) -> None:
         print_line(self.console)
         if self.dryrun:
             print("Dry run:\n")
         self.console.print(
-            f"{self.action} {len(self.files2process)} files\n"
+            f"{self.op_description.present} {len(self.files2process)} files\n"
             f"from: {self.dir_source}\n"
             f"to:   {self.dir_dest}"
         )
@@ -176,58 +268,29 @@ class CoMo(ClifsPlugin, PathGetterMixin):
             console=self.console,
             auto_refresh=False,
         ) as live:
-            for num_file, file in enumerate(self.files2process, 1):
-                skip = False
-                txt_report = f"Last: {file.name}"
-                filepath_dest = self.get_path_dest(file)
-                if filepath_dest.exists():
-                    if self.skip_existing:
-                        txt_report = set_style(
-                            f"Skipped as already present: {file.name}",
-                            "warning",
-                        )
-                        skip = True
-                        self.progress["counts"].advance(self.tasks["files_skipped"])
-                    elif self.keep_all:
-                        filepath_dest_new = get_unique_path(filepath_dest)
-                        if filepath_dest_new != filepath_dest:
-                            txt_report = set_style(
-                                "Changed name as already present: "
-                                f"{filepath_dest.name} -> {filepath_dest_new.name}",
-                                "warning",
-                            )
-                            filepath_dest = filepath_dest_new
-                            self.progress["counts"].advance(self.tasks["files_renamed"])
-                    else:
-                        txt_report = set_style(
-                            f"Replacing existing version for: {file.name}",
-                            "warning",
-                        )
-                        self.progress["counts"].advance(self.tasks["files_replaced"])
+            for num_file, file_src in enumerate(self.files2process, 1):
+                file_dest = self.get_path_dest(file_src)
+                process_report = self.process_file(file_src, file_dest)
+                file_report = (
+                    f"Last: {file_src.name}"
+                    if process_report is None
+                    else process_report
+                )
 
-                if not skip:
-                    self.create_file(file, filepath_dest)
-
-                last_action = "moved" if self.move else "copied"
                 if not self.terse:
                     cli_bar(
                         num_file,
                         len(self.files2process),
-                        suffix=f"{last_action}. {txt_report}",
+                        suffix=f"{self.op_description.past}. {file_report}",
                         console=self.console,
                     )
                 self.progress["overall"].update(
                     self.tasks["progress"],
-                    last_action=f"{last_action} {file.name}",
+                    last_action=f"{self.op_description.past} {file_src.name}",
                 )
                 self.progress["overall"].advance(self.tasks["progress"])
                 live.refresh()
         print_line(self.console)
-
-    def get_path_dest(self, path_file: Path) -> Path:
-        if self.flatten:
-            return self.dir_dest / path_file.name
-        return Path(str(path_file).replace(str(self.dir_source), str(self.dir_dest)))
 
 
 class FileMover(CoMo):
@@ -239,9 +302,8 @@ class FileMover(CoMo):
      Supports multiple ways to select files and to deal with files already existing at
      the target location."""
 
-    def __init__(self, args: Namespace) -> None:
-        self.move = True
-        super().__init__(args)
+    operation = staticmethod(shutil.move)
+    op_description = OperationVerbs(verb="move", past="moved", present="moving")
 
 
 class FileCopier(CoMo):
@@ -253,6 +315,5 @@ class FileCopier(CoMo):
      Supports multiple ways to select files and to deal with files already existing at
      the target location."""
 
-    def __init__(self, args: Namespace) -> None:
-        self.move = False
-        super().__init__(args)
+    operation = staticmethod(shutil.copy2)
+    op_description = OperationVerbs(verb="copy", past="copied", present="copying")

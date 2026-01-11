@@ -1,28 +1,28 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
-[tool.hatch.build]
-dev-mode-dirs = ["."]
-
 [project]
 name = "clifs"
 description = "Command line interface for basic file system operations."
 readme = "README.md"
 authors = [{ email = "don.felice@gmx.net", name = "Felix Segerer" }]
-license-files = { paths = ["LICENSE"] }
+license-files = ["LICENSE"]
 classifiers = ["Programming Language :: Python :: 3"]
 keywords = ["file system", "command line"]
-dependencies = ["rich>=13.7.0", "python-dateutil"]
-dynamic = ["version"]
-requires-python = ">=3.8"
+dependencies = [
+    "rich>=13.7.0",
+    "python-dateutil",
+    "tomli>=2.3.0 ; python_full_version < '3.11'",
+]
+requires-python = ">=3.10"
+version = "1.6.1"
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = "."
 
 [project.urls]
 "Source code" = "https://github.com/Don-Felice/clifs"
-
-[tool.hatch.version]
-path = "clifs/VERSION"
-pattern = "^(?P<version>.*)$"
 
 [project.scripts]
 clifs = "clifs.__main__:main"
@@ -37,23 +37,15 @@ ren = "clifs.plugins.rename:Renamer"
 backup = "clifs.plugins.backup:FileSaver"
 sed = "clifs.plugins.edit:StreamingEditor"
 
-[tool.hatch.envs.default]
-dependencies = [
+[dependency-groups]
+dev = [
     "pytest",
     "pytest-cov",
-    "mypy",
     "pylint",
     "ruff>=0.8.2",
+    "ty",
     "types-python-dateutil",
-    "clifs @ file://{root}",
-]
-[tool.hatch.envs.default.scripts]
-test = "pytest {args}"
-lint = [
-    "ruff format --check .",
-    "ruff check clifs",
-    "pylint clifs",
-    "mypy clifs --strict",
+    "poethepoet",
 ]
 
 [tool.pytest.ini_options]
@@ -77,4 +69,23 @@ lint.extend-select = [
     "W",   # pycodestyle warnings
     "S",   # flake8-bandit security testing
     "SIM", # simplify
+    "B",   # Bugbear
+    "UP",  # Upgrade
 ]
+target-version = "py310"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = [
+    "S101",    # allow asserts
+    "ARG",     # allow unused function args -> fixtures
+    "FBT",     # allow boolean as positionals
+    "PLR2004", # allow magic values
+]
+
+[tool.poe.tasks]
+test = "pytest --cov=my_app"
+ruff_fmt_check = "ruff format --check ."
+ruff_check = "ruff check ."
+pylint = "pylint clifs"
+ty_check = "ty check ."
+lint = ["ruff_fmt_check", "ruff_check", "pylint", "ty_check"]

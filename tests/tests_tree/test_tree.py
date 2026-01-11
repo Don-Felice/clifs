@@ -63,7 +63,7 @@ def test_tree(dirs_source, trees_source_dir, dirs_only, hide_sizes, depth):
 
         exp_tree = trees_source_dir[idx].splitlines()
         if depth is not None:
-            for idx, line in enumerate(exp_tree.copy()):
+            for line in exp_tree.copy():
                 if match := re.match(r".*L(\d+)_file.*", line):
                     exp_depth = int(match[1])
                 else:
@@ -93,10 +93,11 @@ def test_tree(dirs_source, trees_source_dir, dirs_only, hide_sizes, depth):
 
 
 def test_entry(dirs_source, capfd, trees_source_dir):
-    for dir, exp_tree in zip(dirs_source, trees_source_dir):
+    for dir, exp_tree in zip(dirs_source, trees_source_dir, strict=True):
         # run the actual function to test
-        with patch("sys.argv", ["clifs", "tree", str(dir)]), patch(
-            "os.stat_result.st_size", 1024
+        with (
+            patch("sys.argv", ["clifs", "tree", str(dir)]),
+            patch("os.stat_result.st_size", 1024),
         ):
             main()
         out, _ = capfd.readouterr()

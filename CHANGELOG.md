@@ -2,8 +2,12 @@
 
 ## Unreleased Changes
 
+- Breaking: Drop support for python version <3.10
 - support "--version", "-v" parameter to show the clifs version and do not print it by
   default
+- refactor of the copy/move associated classes to follow the template pattern
+- use `ty` instead of `mypy` for type checking
+- use `uv` instead of `hatch` for project management
 
 ## v1.6.1 - Dec. 08, 2024
 

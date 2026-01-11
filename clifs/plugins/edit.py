@@ -4,7 +4,6 @@ import re
 import sys
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
-from typing import Dict, List, Optional, Union
 
 from rich.live import Live
 from rich.panel import Panel
@@ -39,7 +38,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
         plugin_summary
         + ". Runs line by line and gives a preview of the changes by default."
     )
-    files2process: List[Path]
+    files2process: list[Path]
     dir_dest: Path
     dryrun: bool
     encoding: str
@@ -54,7 +53,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
         """
         Adding arguments to an argparse parser. Needed for all clifs_plugins.
         """
-        # add args from FileGetterMixin to arg parser
+        # add args from PathGetterMixin to arg parser
         super().init_parser_mixin(parser)
 
         parser.add_argument(
@@ -118,7 +117,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
         self.preview_count = 0
 
         # define progress
-        self.progress: Dict[str, Progress] = {
+        self.progress: dict[str, Progress] = {
             "counts": get_count_progress(),
             "overall": get_last_action_progress(),
         }
@@ -147,7 +146,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
             for file in self.files2process:
                 try:
                     self.preview_replace(file)
-                except (IOError, UnicodeDecodeError):
+                except (OSError, UnicodeDecodeError):
                     self.console.print(
                         IO_ERROR_MESSAGE.format(encoding=self.encoding, file_path=file)
                     )
@@ -175,14 +174,14 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
                     self.progress["overall"].advance(self.tasks["progress"])
                     self.progress["counts"].advance(self.tasks["files_edited"])
                     live.refresh()
-                except (IOError, UnicodeDecodeError):
+                except (OSError, UnicodeDecodeError):
                     self.console.print(
                         IO_ERROR_MESSAGE.format(encoding=self.encoding, file_path=file)
                     )
                     sys.exit(1)
 
-    def parse_line_nums(self) -> Optional[Union[List[int], range]]:
-        line_nums: Optional[Union[List[int], range]]
+    def parse_line_nums(self) -> list[int] | range | None:
+        line_nums: list[int] | range | None
         try:
             if self.lines is None:
                 return None
@@ -191,7 +190,6 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
                 line_nums = range(range_min, range_max + 1)
             elif "," in self.lines:
                 line_nums = list(map(int, self.lines.split(",")))
-
             else:
                 line_nums = [int(self.lines)]
 
@@ -218,7 +216,7 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
             sys.exit(1)
         return line_nums
 
-    def get_tasks(self) -> Dict[str, TaskID]:
+    def get_tasks(self) -> dict[str, TaskID]:
         # define overall progress task
         tasks = {
             "progress": self.progress["overall"].add_task(
@@ -287,11 +285,12 @@ class StreamingEditor(ClifsPlugin, PathGetterMixin):
             input_file.parent / (input_file.stem + "_edited" + input_file.suffix)
         )
 
-        with input_file.open(
-            "r", encoding=self.encoding
-        ) as input_fh, temp_output_file.open("w", encoding=self.encoding) as output_fh:
+        with (
+            input_file.open("r", encoding=self.encoding) as input_fh,
+            temp_output_file.open("w", encoding=self.encoding) as output_fh,
+        ):
             if self.line_nums is None:
-                for line_num, line in enumerate(input_fh, 1):
+                for line in input_fh:
                     mod_line = re.sub(self.pattern, self.replacement, line)
                     if mod_line != line:
                         self.progress["counts"].advance(
